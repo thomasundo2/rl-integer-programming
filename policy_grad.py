@@ -23,7 +23,7 @@ def policy_grad(config, iterations = 150, num_processes = 8, num_trajs_per_proce
     rollout_gen = RolloutGenerator(num_processes, num_trajs_per_process, verbose = True)
     rrecord = []
 
-    for ite in tqdm(range(iterations)):
+    for ite in range(iterations): # todo: use tqdm here
         memory = rollout_gen.generate_trajs(env, actor, gamma)
 
         memory.values = (memory.values - np.mean(memory.values)) / (np.std(memory.values) + 1e-8)
@@ -35,7 +35,7 @@ def main():
     config = configs.starter_config
     policy_params = params.dense_params
 
-    policy_grad(config, iterations=150, num_processes=8, num_trajs_per_process=1, **params)
+    policy_grad(config, iterations=150, num_processes=8, num_trajs_per_process=1, **policy_params)
 
 
 if __name__ == '__main__':

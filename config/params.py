@@ -18,3 +18,7 @@ rnn_params = {'model'      : 'rnn',
                                'lr'         : 0.001}
             }
 
+rand_params = {'model'      : 'random',
+              'model_params': { }
+             }
+

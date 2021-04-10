@@ -3,6 +3,19 @@ import numpy as np
 
 from basepolicy import AbstractPolicy
 
+class RandomPolicy(AbstractPolicy):
+    def __init__(self):
+        pass
+
+    def _compute_prob_torch(self, state):
+        Ab, c0, cuts = state
+        probs = np.ones(len(cuts))/len(cuts)
+        return torch.FloatTensor(probs)
+
+    def train(self, memory):
+        pass
+
+
 class AttentionPolicy(AbstractPolicy):
     def __init__(self, n, h, lr):
         """
@@ -29,8 +42,8 @@ class AttentionPolicy(AbstractPolicy):
         cuts_h = self.model(torch.FloatTensor(np.array(cuts, dtype=np.float)))
 
         scores = torch.mean(torch.matmul(Ab_h, torch.transpose(cuts_h, 0, 1)), 0)
-
-        scores = (scores - np.mean()) / (np.std(scores) + 1e-8)
+        scores = scores / torch.sum(scores)
+        # print(scores)
         prob = torch.nn.functional.softmax(scores, dim=0)
         return prob
 

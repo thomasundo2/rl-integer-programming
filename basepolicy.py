@@ -24,10 +24,12 @@ class AbstractPolicy(ABC):
             val = memory.values[i]
             action = int(memory.actions[i])
             prob = self._compute_prob_torch(state)
+
             k = len(prob)
             action_onehot = np.zeros(k)
             action_onehot[action] = 1
             action_onehot = torch.FloatTensor(action_onehot)
+
             prob_selected = torch.matmul(prob, action_onehot)
             loss += val * torch.log(prob_selected + 1e-8)
         loss = -loss / len(memory.states)

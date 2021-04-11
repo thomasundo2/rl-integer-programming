@@ -13,6 +13,7 @@ attention_params = {'model'      : 'attention',
                                     'lr'         : 0.001}
                   }
 
+# todo: fix parallelization for rnns
 rnn_params = {'model'      : 'rnn',
               'model_params': {'n'          : 10,
                                'lr'         : 0.001}

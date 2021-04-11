@@ -8,7 +8,7 @@ from multiprocessing import Pool
 from memory import TrajMemory, MasterMemory
 from helper import discounted_rewards
 class RolloutGenerator(object):
-    """a parallel process trajectory generator
+    """a parallel process trajectory generator, with preprocessing functionality
     """
 
     def __init__(self, num_processes, num_trajs_per_process, verbose = False):
@@ -16,10 +16,10 @@ class RolloutGenerator(object):
         self.num_trajs_per_process = num_trajs_per_process
         self.verbose = verbose # prints the sum of the rewards for each trajectory
 
+
     def _condense_state(self, s):
         """Takes A, b, c0, cuts_a, cuts_b and concatenates Ab and cuts
         """
-
         def append_col(A, b):
             expanded_b = np.expand_dims(b, 1)
             return np.append(A, expanded_b, 1)
@@ -28,6 +28,39 @@ class RolloutGenerator(object):
         Ab = append_col(A, b)
         cuts = append_col(cuts_a, cuts_b)
         return (Ab, c0, cuts)
+
+
+    def _preprocess_state(self, state):
+        """
+        Given a dataset of { [Ai bi], c0, [Ei di] } i = 0 to N,
+        1. min1 = min { Ai, Ei }, max1 = max {Ai, Ei }
+        2. min2 = min { bi, di }, max2 = max { bi, di }
+        3. Normalize Ai and Ei with min1 and max1. Normalize bi and di with min2 and max2.
+        """
+
+        def normalize_matrix(matrix, min_val, max_val):
+            """normalizes all elements in matrix to be between min val and max val
+            """
+            return (max_val - min_val) * (matrix - np.min(matrix)) / (np.max(matrix) - np.min(matrix)) + min_val
+
+        A, b, c0, cuts_a, cuts_b = state
+
+        min_lhs = np.min([np.min(A), np.min(cuts_a)])
+        max_lhs = np.max([np.max(A), np.max(cuts_a)])
+        min_rhs = np.min([np.min(b), np.min(cuts_b)])
+        max_rhs = np.max([np.max(b), np.max(cuts_b)])
+
+        A = normalize_matrix(A, min_lhs, max_lhs)
+        cuts_a = normalize_matrix(cuts_a, min_lhs, max_lhs)
+
+        b = normalize_matrix(b, min_rhs, max_rhs)
+        cuts_b = normalize_matrix(cuts_b, min_rhs, max_rhs)
+
+        processed_state = (A, b, c0, cuts_a, cuts_b)
+        condensed_state = self._condense_state(processed_state)
+        return condensed_state
+
+
 
     def _generate_traj_process(self, env, actor, gamma, process_num):
         @contextmanager # supress Gurobi message
@@ -45,14 +78,14 @@ class RolloutGenerator(object):
         for num in range(self.num_trajs_per_process):
             with suppress_stdout():  # remove the Gurobi std out
                 s = env.reset()  # samples a random instance every time env.reset() is called
-            condensed_s = self._condense_state(s)
+            processed_s = self._preprocess_state(s)
             d = False
             t = 0
             traj_memory = TrajMemory()
             rews = 0
             while not d:
-                actsize = len(condensed_s[-1])  # k
-                prob = actor.compute_prob(condensed_s)
+                actsize = len(processed_s[-1])  # k
+                prob = actor.compute_prob(processed_s)
                 prob /= np.sum(prob)
 
                 a = np.random.choice(actsize, p=prob.flatten())
@@ -62,12 +95,14 @@ class RolloutGenerator(object):
                 t += 1
 
                 r = r * 10
-                traj_memory.add_frame(condensed_s, a, r)
+                traj_memory.add_frame(processed_s, a, r)
 
                 if not d:
-                    condensed_s = self._condense_state(new_s)
+                    processed_s = self._condense_state(new_s)
             if self.verbose:
                 print(f"[{process_num}] rews: {rews} \t t: {t}")
+            traj_memory.reward_sums.append(rews)
+
             Q = discounted_rewards(traj_memory.rewards, gamma)
             val = np.array(Q)
             traj_memory.values = val

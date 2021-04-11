@@ -13,7 +13,8 @@ class RandomPolicy(AbstractPolicy):
         return torch.FloatTensor(probs)
 
     def train(self, memory):
-        pass
+        loss = 0
+        return loss
 
 
 class AttentionPolicy(AbstractPolicy):
@@ -26,7 +27,7 @@ class AttentionPolicy(AbstractPolicy):
             # input layer
             torch.nn.Linear(n+1, 32),
             torch.nn.ReLU(),
-            torch.nn.Linear(32, h)
+            torch.nn.Linear(32, 20)
         )
 
         # DEFINE THE OPTIMIZER
@@ -38,52 +39,51 @@ class AttentionPolicy(AbstractPolicy):
 
     def _compute_prob_torch(self, state):
         Ab, c0, cuts = state
-        Ab_h = self.model(torch.FloatTensor(np.array(Ab, dtype=np.float)))
-        cuts_h = self.model(torch.FloatTensor(np.array(cuts, dtype=np.float)))
+        Ab = torch.nn.functional.normalize(torch.FloatTensor(np.array(Ab, dtype=np.float)), dim=1, p=1)
+        cuts = torch.nn.functional.normalize(torch.FloatTensor(np.array(cuts, dtype=np.float)), dim=1, p=1)
+
+        Ab_h = self.model(Ab)
+        cuts_h = self.model(cuts)
 
         scores = torch.mean(torch.matmul(Ab_h, torch.transpose(cuts_h, 0, 1)), 0)
-        scores = scores / torch.sum(scores)
-        # print(scores)
         prob = torch.nn.functional.softmax(scores, dim=0)
         return prob
 
 class RNNPolicy(AbstractPolicy):
-    def __init__(self, num_dec_vars, lr):
+    def __init__(self, n, lr):
         """
         num_dec_vars is n
         """
-        self.rnn_model = self.RecurrentNetwork(num_dec_vars+1)
-        self.optimizer = torch.optim.Adam(self.rnn_model.parameters(), lr=lr)
+        self.model = RecurrentNetwork(n+1)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
 
     def _compute_prob_torch(self, state):
         Ab, _, cuts = state
-        Ab_numpy = np.array(Ab)
         batch = []
         for cut in cuts:
-            x = np.append(Ab.flatten(), cut.flatten())
+            x = np.vstack([Ab, cut.flatten()])
             batch.append(x)
-
         batch_torch = torch.FloatTensor(batch)
-        scores = self.rnn_model(batch_torch).flatten()
+        scores = self.model(batch_torch).flatten()
 
         return torch.nn.functional.softmax(scores, dim=-1)
 
-    class RecurrentNetwork(torch.nn.Module):
-        def __init__(self, num_dec_vars):
-            super(self.RecurrentNetwork, self).__init__()
-            self.rnn = torch.nn.GRU(num_dec_vars, 64, num_layers=2,
-                                    batch_first=True, dropout=0.1)
-            self.ffnn = torch.nn.Linear(64, 1)
+class RecurrentNetwork(torch.nn.Module):
+    def __init__(self, n):
+        super(RecurrentNetwork, self).__init__()
+        self.rnn = torch.nn.GRU(n, 64, num_layers=2,
+                                batch_first=True)
+        self.ffnn = torch.nn.Linear(64, 1)
 
-        def forward(self, states):  # takes in batch of states of variable length
-            # lens = (x != 0).sum(1)
-            # p_embeds = rnn.pack_padded_sequence(embeds, lens, batch_first=True, enforce_sorted=False)
-            _, hn = self.rnn(states)
-            hns = hn.split(1, dim=0)
-            last_hn = hns[-1]
-            scores = self.ffnn(last_hn.squeeze(0))
-            prob = torch.nn.functional.softmax(scores, dim=0)
-            return prob
+    def forward(self, states):  # takes in batch of states of variable length
+        # lens = (x != 0).sum(1)
+        # p_embeds = rnn.pack_padded_sequence(embeds, lens, batch_first=True, enforce_sorted=False)
+        _, hn = self.rnn(states)
+        hns = hn.split(1, dim=0)
+        last_hn = hns[-1]
+        scores = self.ffnn(last_hn.squeeze(0))
+        prob = torch.nn.functional.softmax(scores, dim=0)
+        return prob
 
 class DensePolicy(AbstractPolicy):
     def __init__(self, m, n, t, lr):

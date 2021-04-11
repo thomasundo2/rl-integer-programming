@@ -46,7 +46,9 @@ def policy_grad(env_config,
     rrecord = []
     lossrecord = []
 
-    for _ in tqdm(range(iterations)): # todo: use tqdm here
+    for ite in tqdm(range(iterations)): # todo: use tqdm here
+        if ite % 10 == 0 and ite > 0: # todoo
+            print(np.mean(rrecord[-10:]))
         memory = rollout_gen.generate_trajs(env, actor, gamma)
 
         memory.values = (memory.values - np.mean(memory.values)) / (np.std(memory.values) + 1e-8)
@@ -61,14 +63,14 @@ def policy_grad(env_config,
 
 def main():
     env_config = configs.starter_config
-    policy_params = params.attention_params
+    policy_params = params.rnn_params
 
     policy_grad(env_config,                 # environment configuration
-                iterations=350,             # number of iterations to run policy gradient
-                num_processes=12,           # number of processes running in parallel
-                num_trajs_per_process=1,    # number of trajectories per process
-                gamma = 0.99,               # discount factor
-                **policy_params             # actor definition
+                policy_params,              # actor definition
+                iterations=100,             # number of iterations to run policy gradient
+                num_processes=1,           # number of processes running in parallel
+                num_trajs_per_process=12,    # number of trajectories per process
+                gamma = 0.99                # discount factor
                 )
 
 

@@ -41,7 +41,8 @@ class AttentionPolicy(AbstractPolicy):
         Ab, c0, cuts = state
         Ab = torch.nn.functional.normalize(torch.FloatTensor(np.array(Ab, dtype=np.float)), dim=1, p=1)
         cuts = torch.nn.functional.normalize(torch.FloatTensor(np.array(cuts, dtype=np.float)), dim=1, p=1)
-
+        Ab = torch.FloatTensor(Ab)
+        cuts = torch.FloatTensor(cuts)
         Ab_h = self.model(Ab)
         cuts_h = self.model(cuts)
 

@@ -42,35 +42,37 @@ def policy_grad(env_config,
 
     actor = build_actor(policy_params)
 
-    rollout_gen = RolloutGenerator(num_processes, num_trajs_per_process, verbose = False)
+    rollout_gen = RolloutGenerator(num_processes, num_trajs_per_process, verbose = True)
     rrecord = []
     lossrecord = []
+    baseline = 0
 
     for ite in tqdm(range(iterations)): # todo: use tqdm here
-        if ite % 10 == 0 and ite > 0: # todoo
+        if ite % 10 == 0 and ite > 0:
             print(np.mean(rrecord[-10:]))
-        memory = rollout_gen.generate_trajs(env, actor, gamma)
-
+        memory = rollout_gen.generate_trajs(env, actor, gamma, baseline)
+        # baseline = np.mean(memory.rewards)
         memory.values = (memory.values - np.mean(memory.values)) / (np.std(memory.values) + 1e-8)
         rrecord.extend(memory.reward_sums)
         loss = actor.train(memory)
         lossrecord.append(loss)
 
-    plot_arr(rrecord, label = "Moving Avg Reward " + policy_params['model'], window_size = 101)
 
+    plot_arr(rrecord, label = "Moving Avg Reward " + policy_params['model'], window_size = 101)
+    plot_arr(rrecord, label="Reward " + policy_params['model'], window_size=1)
     plot_arr(lossrecord, label = "Loss " + policy_params['model'], window_size = 1)
 
 
 def main():
-    env_config = configs.starter_config
-    policy_params = params.rnn_params
+    env_config = configs.easy_config
+    policy_params = params.dense_params
 
     policy_grad(env_config,                 # environment configuration
                 policy_params,              # actor definition
-                iterations=100,             # number of iterations to run policy gradient
-                num_processes=1,           # number of processes running in parallel
-                num_trajs_per_process=12,    # number of trajectories per process
-                gamma = 0.99                # discount factor
+                iterations=75,             # number of iterations to run policy gradient
+                num_processes=12,           # number of processes running in parallel
+                num_trajs_per_process=1,    # number of trajectories per process
+                gamma = 0.025                # discount factor
                 )
 
 

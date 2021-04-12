@@ -62,7 +62,7 @@ class RolloutGenerator(object):
 
 
 
-    def _generate_traj_process(self, env, actor, gamma, process_num):
+    def _generate_traj_process(self, env, actor, gamma, process_num, baseline):
         @contextmanager # supress Gurobi message
         def suppress_stdout():
             with open(os.devnull, "w") as devnull:
@@ -75,6 +75,7 @@ class RolloutGenerator(object):
 
         np.random.seed()
         trajs = []
+
         for num in range(self.num_trajs_per_process):
             with suppress_stdout():  # remove the Gurobi std out
                 s = env.reset()  # samples a random instance every time env.reset() is called
@@ -91,40 +92,49 @@ class RolloutGenerator(object):
                 a = np.random.choice(actsize, p=prob.flatten())
 
                 new_s, r, d, _ = env.step([a])
-                rews += r
+                rews += r # keep the original reward tracking unchanged
+
                 t += 1
 
-                r = r * 10
+                r = r * 10 * (1/t**1.5) # new usage of reward
                 traj_memory.add_frame(processed_s, a, r)
+                delta = 0
+                if r < delta and t > 20:
+                    break
 
                 if not d:
                     processed_s = self._condense_state(new_s)
             if self.verbose:
                 print(f"[{process_num}] rews: {rews} \t t: {t}")
+
+
             traj_memory.reward_sums.append(rews)
 
             Q = discounted_rewards(traj_memory.rewards, gamma)
-            val = np.array(Q)
+
+            val = np.array(Q) - baseline
             traj_memory.values = val
 
             trajs.append(traj_memory)
         return trajs
 
-    def generate_trajs(self, env, actor, gamma):
+    def generate_trajs(self, env, actor, gamma, baseline = 0):
         if self.num_processes == 1: # don't run in parallel
             DATA = []
-            DATA.append(self._generate_traj_process(env, actor, gamma, 0))
+            DATA.append(self._generate_traj_process(env, actor, gamma, 0, baseline))
         else:
             env_list = [env] * self.num_processes
             actor_list = [actor] * self.num_processes
             gamma_list = [gamma] * self.num_processes
             i_list = np.arange(self.num_processes)
+            baseline_list = [baseline] * self.num_processes
             with Pool(processes=self.num_processes) as pool:
                 DATA = pool.starmap(self._generate_traj_process,
                                     zip(env_list,
                                         actor_list,
                                         gamma_list,
-                                        i_list
+                                        i_list,
+                                        baseline_list
                                         )
                                     )
             # unpack data
@@ -132,4 +142,5 @@ class RolloutGenerator(object):
         for trajs in DATA:
             for traj in trajs:
                 master_mem.add_trajectory(traj)
+
         return master_mem

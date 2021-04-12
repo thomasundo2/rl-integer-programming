@@ -61,3 +61,4 @@ if __name__ == "__main__":
 	#if using hard-config make sure to use "training-hard" tag in wandb.init in the initialization on top
 
 
+

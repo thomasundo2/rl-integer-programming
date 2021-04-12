@@ -72,7 +72,6 @@ To make sure your algorithm generalizes to instances beyond those in the instanc
 ```
 $ python generate_randomip.py --num-v 60 --num-c 60 --num-instances 100
 ```
-
 The above instances will be saved in a directory named 'instances/randomip_n60_m60'. Then, we can load instances into gym env and train a cutting agent. The following code loads the 50th instance and run an episode with horizon 50:
 
 ```

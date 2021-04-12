@@ -25,9 +25,11 @@ class AttentionPolicy(AbstractPolicy):
         """
         self.model = torch.nn.Sequential(
             # input layer
-            torch.nn.Linear(n+1, 32),
+            torch.nn.Linear(n+1, 128),
             torch.nn.ReLU(),
-            torch.nn.Linear(32, 20)
+            torch.nn.Linear(128, 64),
+            torch.nn.ReLU(),
+            torch.nn.Linear(64, h)
         )
 
         # DEFINE THE OPTIMIZER
@@ -38,7 +40,7 @@ class AttentionPolicy(AbstractPolicy):
         self.h = h
 
     def _compute_prob_torch(self, state):
-        Ab, c0, cuts = state
+        Ab, _, cuts = state
         Ab = torch.nn.functional.normalize(torch.FloatTensor(np.array(Ab, dtype=np.float)), dim=1, p=1)
         cuts = torch.nn.functional.normalize(torch.FloatTensor(np.array(cuts, dtype=np.float)), dim=1, p=1)
         Ab = torch.FloatTensor(Ab)
@@ -60,6 +62,11 @@ class RNNPolicy(AbstractPolicy):
 
     def _compute_prob_torch(self, state):
         Ab, _, cuts = state
+        Ab = torch.nn.functional.normalize(torch.FloatTensor(np.array(Ab, dtype=np.float)), dim=1, p=1)
+        cuts = torch.nn.functional.normalize(torch.FloatTensor(np.array(cuts, dtype=np.float)), dim=1, p=1)
+        Ab = np.array(Ab)
+        cuts = np.array(cuts)
+
         batch = []
         for cut in cuts:
             x = np.vstack([Ab, cut.flatten()])
@@ -72,7 +79,7 @@ class RNNPolicy(AbstractPolicy):
 class RecurrentNetwork(torch.nn.Module):
     def __init__(self, n):
         super(RecurrentNetwork, self).__init__()
-        self.rnn = torch.nn.GRU(n, 64, num_layers=2,
+        self.rnn = torch.nn.GRU(n, 64, num_layers=1,
                                 batch_first=True)
         self.ffnn = torch.nn.Linear(64, 1)
 

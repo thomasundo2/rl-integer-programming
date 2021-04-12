@@ -22,3 +22,7 @@ def plot_arr(arr, label = None, window_size = 101):
     plt.plot(np.arange(len(moving_avg)), moving_avg)
     plt.title(label)
     plt.pause(0.001)
+
+
+
+

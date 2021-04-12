@@ -1,6 +1,5 @@
 from tqdm import tqdm
 import numpy as np
-import matplotlib.pyplot as plt
 
 # import wandb
 # wandb.login()
@@ -12,6 +11,7 @@ from gymenv_v2 import make_multiple_env
 from rollout_gen import RolloutGenerator
 from policies import AttentionPolicy, RNNPolicy, DensePolicy, RandomPolicy
 from helper import plot_arr
+from logger import RewardLogger
 
 
 def build_actor(policy_params):
@@ -31,48 +31,62 @@ def build_actor(policy_params):
 
     return actor
 
+
 def policy_grad(env_config,
                 policy_params,
-                iterations = 150,
-                num_processes = 8,
-                num_trajs_per_process = 1,
-                gamma = 0.99
+                iterations=150,
+                num_processes=8,
+                num_trajs_per_process=1,
+                gamma=0.99
                 ):
     env = make_multiple_env(**env_config)
 
     actor = build_actor(policy_params)
 
-    rollout_gen = RolloutGenerator(num_processes, num_trajs_per_process, verbose = True)
-    rrecord = []
-    lossrecord = []
+    rollout_gen = RolloutGenerator(num_processes, num_trajs_per_process, verbose=True)
+
+
+    # todo: temporary until hyperparameters are reformatted
+    hyperparams = {"iterations": iterations,
+                   "num_processes": num_processes,
+                   "num_trajs_per_process": num_trajs_per_process,
+                   "gamma": gamma
+                   }
+
+    logger = RewardLogger(env_config, policy_params, hyperparams)
     baseline = 0
 
-    for ite in tqdm(range(iterations)): # todo: use tqdm here
+    rrecord = []
+
+    for ite in tqdm(range(iterations)):
         if ite % 10 == 0 and ite > 0:
             print(np.mean(rrecord[-10:]))
         memory = rollout_gen.generate_trajs(env, actor, gamma, baseline)
         # baseline = np.mean(memory.rewards)
         memory.values = (memory.values - np.mean(memory.values)) / (np.std(memory.values) + 1e-8)
-        rrecord.extend(memory.reward_sums)
+
         loss = actor.train(memory)
-        lossrecord.append(loss)
 
+        # log results
+        rrecord.extend(memory.reward_sums)
+        logger.record(memory.reward_sums) # writes record to a file
 
-    plot_arr(rrecord, label = "Moving Avg Reward " + policy_params['model'], window_size = 101)
+    plot_arr(rrecord, label="Moving Avg Reward " + policy_params['model'], window_size=101)
     plot_arr(rrecord, label="Reward " + policy_params['model'], window_size=1)
-    plot_arr(lossrecord, label = "Loss " + policy_params['model'], window_size = 1)
 
 
 def main():
-    env_config = configs.easy_config
-    policy_params = params.dense_params
+    env_config = configs.starter_config
+    policy_params = params.gen_attention_params(n=10)
+    hyperparams = {"iterations": 20,  # number of iterations to run policy gradient
+                   "num_processes": 12,  # number of processes running in parallel
+                   "num_trajs_per_process": 1,  # number of trajectories per process
+                   "gamma": 0.025  # discount factor
+                   }
 
-    policy_grad(env_config,                 # environment configuration
-                policy_params,              # actor definition
-                iterations=75,             # number of iterations to run policy gradient
-                num_processes=12,           # number of processes running in parallel
-                num_trajs_per_process=1,    # number of trajectories per process
-                gamma = 0.025                # discount factor
+    policy_grad(env_config,  # environment configuration
+                policy_params,  # actor definition
+                **hyperparams
                 )
 
 

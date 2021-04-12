@@ -15,7 +15,7 @@ veryeasy_config = {
 # Easy Setup: Use the following environment settings. We will evaluate your agent with the same easy config below:
 easy_config = {
     "load_dir"        : 'instances/train_10_n60_m60',
-    "idx_list"        : list(range(8,9)),
+    "idx_list"        : list(range(9,10)),
     "timelimit"       : 50,
     "reward_type"     : 'obj'
 }

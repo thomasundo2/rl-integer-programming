@@ -1,5 +1,4 @@
 
-# TODO: build a dynamic parameter builder which takes in m, n, and t
 # CONFIG FOR STARTER
 """
 dense_params = {'model'      : 'dense',
@@ -26,23 +25,23 @@ rand_params = {'model'      : 'random',
              }
 """
 
+def attention_params(n, h, lr):
+    return {'model'       : 'attention',
+            'model_params': {'n'          : n,
+                             'h'          : h,
+                             'lr'         : lr}
+           }
 
-attention_params = {'model'      : 'attention',
-                   'model_params': {'n'          : 60,
-                                    'h'          : 40,
-                                    'lr'         : 0.005}
-                  }
+def dense_params(m, n, t, lr):
+    return {'model'       : 'dense',
+            'model_params': {'m'          : m,
+                             'n'          : n,
+                             't'          : t,
+                             'lr'         : lr}
+          }
 
+def rand_params():
+    return {'model'       : 'random',
+            'model_params': { }
+           }
 
-dense_params = {'model'      : 'dense',
-              'model_params': {'m'          : 60,
-                               'n'          : 60,
-                               't'          : 50,
-                               'lr'         : 0.001}
-              }
-
-
-
-rand_params = {'model'      : 'random',
-              'model_params': { }
-             }

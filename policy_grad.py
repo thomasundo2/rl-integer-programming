@@ -76,9 +76,14 @@ def policy_grad(env_config,
 
 
 def main():
-    env_config = configs.starter_config
-    policy_params = params.gen_attention_params(n=10)
-    hyperparams = {"iterations": 20,  # number of iterations to run policy gradient
+    env_config = configs.easy_config
+    #policy_params = params.gen_rnn_params(n=10, lr = 0.001)
+    # policy_params = params.gen_dense_params(m = 60, n=60, t = 50, lr=0.001)
+    #
+    # policy_params = params.gen_rand_params()
+
+    policy_params = params.gen_attention_params(n=60, h = 32)
+    hyperparams = {"iterations": 300,  # number of iterations to run policy gradient
                    "num_processes": 12,  # number of processes running in parallel
                    "num_trajs_per_process": 1,  # number of trajectories per process
                    "gamma": 0.025  # discount factor

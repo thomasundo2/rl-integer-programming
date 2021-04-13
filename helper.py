@@ -11,15 +11,20 @@ def discounted_rewards(r, gamma):
     return list(discounted_r)
 
 def plot_arr(arr, label = None, window_size = 101):
-    def rollavg_cumsum(a, n):
-        assert n % 2 == 1
-        cumsum_vec = np.cumsum(np.insert(a, 0, 0))
-        return (cumsum_vec[n:] - cumsum_vec[:-n]) / n
+    def moving_avg(a, n):
+        new_a = []
+        for i in range(len(a)):
+            if i < n:
+                new_a.append(0)
+            else:
+                new_a.append(np.mean(a[i-100:i]))
+        print(new_a)
+        return new_a
 
     arr = np.array(arr)
-
-    moving_avg = rollavg_cumsum(arr, window_size)
-    plt.plot(np.arange(len(moving_avg)), moving_avg)
+    if window_size > 1:
+        arr = moving_avg(arr, window_size)
+    plt.plot(np.arange(len(arr)), arr)
     plt.title(label)
     plt.pause(0.001)
 

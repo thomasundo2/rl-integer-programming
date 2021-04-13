@@ -23,6 +23,12 @@ def gen_dense_params(m, n, t, lr=0.001):
                              'lr': lr}
             }
 
+def gen_rnn_params(n, lr):
+    return {'model': 'rnn',
+            'model_params': {'n': n,
+                             'lr': lr}
+            }
+
 
 def gen_rand_params():
     return {'model': 'random',

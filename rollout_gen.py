@@ -30,8 +30,6 @@ class RolloutGenerator(object):
         return (Ab, c0, cuts)
 
 
-
-
     def _preprocess_state(self, state):
         """
         Given a dataset of { [Ai bi], c0, [Ei di] } i = 0 to N,

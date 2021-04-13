@@ -24,7 +24,8 @@ class TrajMemory(Memory):
         self.rewards.append(r)
 
 class MasterMemory(Memory):
-    """inherits a general memory class, through which we can easily add trajectories to the MasterMemory
+    """inherits a general memory class,
+       so we can easily add trajectories to the MasterMemory
     """
 
     def add_trajectory(self, trajectory_memory):

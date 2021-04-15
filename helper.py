@@ -17,8 +17,7 @@ def plot_arr(arr, label = None, window_size = 101):
             if i < n:
                 new_a.append(0)
             else:
-                new_a.append(np.mean(a[i-100:i]))
-        print(new_a)
+                new_a.append(np.mean(a[i-window_size:i]))
         return new_a
 
     arr = np.array(arr)

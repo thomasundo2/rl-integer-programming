@@ -96,7 +96,7 @@ class RolloutGenerator(object):
 
                 t += 1
 
-                r = r * 10 * (1/t**1.5) # new usage of reward
+                # r = r * 10 * (1/t**1.5) # todo new usage of reward
                 traj_memory.add_frame(processed_s, a, r)
                 delta = 0
                 if r < delta and t > 20:

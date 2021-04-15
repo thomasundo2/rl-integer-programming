@@ -13,6 +13,13 @@ def gen_attention_params(n, h=32, lr=0.001):
                              'h': h,
                              'lr': lr}
             }
+def gen_double_attention_params(n, h=32, lr=0.001):
+    return {'model': 'double_attention',
+            'model_params': {'n': n,
+                             'h': h,
+                             'lr': lr}
+            }
+
 
 
 def gen_dense_params(m, n, t, lr=0.001):

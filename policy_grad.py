@@ -9,7 +9,7 @@ import numpy as np
 from config import configs, params
 from gymenv_v2 import make_multiple_env
 from rollout_gen import RolloutGenerator
-from policies import AttentionPolicy, RNNPolicy, DensePolicy, RandomPolicy
+from policies import AttentionPolicy, RNNPolicy, DensePolicy, RandomPolicy, DoubleAttentionPolicy
 from helper import plot_arr
 from logger import RewardLogger
 
@@ -26,6 +26,8 @@ def build_actor(policy_params):
         actor = AttentionPolicy(**policy_params['model_params'])
     elif policy_params['model'] == 'random':
         actor = RandomPolicy(**policy_params['model_params'])
+    elif policy_params['model'] == 'double_attention':
+        actor = DoubleAttentionPolicy(**policy_params['model_params'])
     else:
         raise NotImplementedError
 
@@ -82,11 +84,13 @@ def main():
     #
     # policy_params = params.gen_rand_params()
 
-    policy_params = params.gen_attention_params(n=60, h = 32)
-    hyperparams = {"iterations": 300,  # number of iterations to run policy gradient
+    # policy_params = params.gen_dense_params(m = 60, n=60, t = 50, lr=0.001)
+    policy_params = params.gen_attention_params(n = 60, h = 32)
+
+    hyperparams = {"iterations": 1000,  # number of iterations to run policy gradient
                    "num_processes": 12,  # number of processes running in parallel
                    "num_trajs_per_process": 1,  # number of trajectories per process
-                   "gamma": 0.025  # discount factor
+                   "gamma": 0.99  # discount factor
                    }
 
     policy_grad(env_config,  # environment configuration

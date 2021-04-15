@@ -52,6 +52,58 @@ class AttentionPolicy(AbstractPolicy):
         prob = torch.nn.functional.softmax(scores, dim=0)
         return prob
 
+
+class DoubleAttentionPolicy(AbstractPolicy):
+    """uses two MLP's to calculate the loss
+    """
+    def __init__(self, n, h, lr):
+        """
+        n: size of constraints and the b
+        h: size of output
+        """
+        self.model_1 = torch.nn.Sequential(
+            # input layer
+            torch.nn.Linear(n+1, 128),
+            torch.nn.ReLU(),
+            torch.nn.Linear(128, 64),
+            torch.nn.ReLU(),
+            torch.nn.Linear(64, h)
+        )
+
+        self.model_2 = torch.nn.Sequential(
+            # input layer
+            torch.nn.Linear(n + 1, 128),
+            torch.nn.ReLU(),
+            torch.nn.Linear(128, 64),
+            torch.nn.ReLU(),
+            torch.nn.Linear(64, h)
+        )
+
+        # DEFINE THE OPTIMIZER
+
+        self.optimizer = torch.optim.Adam([
+            {'params': self.model_1.parameters(), 'lr': lr},
+            {'params': self.model_2.parameters(), 'lr': lr}
+        ])
+
+        # RECORD HYPER-PARAMS
+        self.n = n
+        self.h = h
+
+    def _compute_prob_torch(self, state):
+        Ab, _, cuts = state
+        Ab = torch.nn.functional.normalize(torch.FloatTensor(np.array(Ab, dtype=np.float)), dim=1, p=1)
+        cuts = torch.nn.functional.normalize(torch.FloatTensor(np.array(cuts, dtype=np.float)), dim=1, p=1)
+        Ab = torch.FloatTensor(Ab)
+        cuts = torch.FloatTensor(cuts)
+        Ab_h = self.model_1(Ab)
+        cuts_h = self.model_2(cuts)
+
+        scores = torch.mean(torch.matmul(Ab_h, torch.transpose(cuts_h, 0, 1)), 0)
+        prob = torch.nn.functional.softmax(scores, dim=0)
+        return prob
+
+
 class RNNPolicy(AbstractPolicy):
     def __init__(self, n, lr):
         """

@@ -21,7 +21,7 @@ class AbstractPolicy(ABC):
     def _compute_loss(self, memory):
         loss = 0
         for i, state in enumerate(memory.states):
-            val = memory.values[i]
+            adv = memory.advantages[i]
             action = int(memory.actions[i])
             prob = self._compute_prob_torch(state)
 
@@ -31,7 +31,7 @@ class AbstractPolicy(ABC):
             action_onehot = torch.FloatTensor(action_onehot)
 
             prob_selected = torch.matmul(prob, action_onehot)
-            loss += val * torch.log(prob_selected + 1e-8)
+            loss += adv * torch.log(prob_selected + 1e-8)
         loss = -loss / len(memory.states)
         assert loss.requires_grad == True
         return loss

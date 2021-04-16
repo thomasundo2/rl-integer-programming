@@ -10,8 +10,8 @@ class Memory(object):
         self.rewards = []  # each element contains trajectory of raw rewards
         self.isdone = []
         self.values = []  # discounted reward
-
         self.reward_sums = []  # each trajectory's sum of rewards, for plotting
+        self.advantages = []
 
     def clear(self):
         self.__init__()

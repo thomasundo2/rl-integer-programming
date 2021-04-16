@@ -62,7 +62,7 @@ class RolloutGenerator(object):
 
 
 
-    def _generate_traj_process(self, env, actor, gamma, process_num, baseline):
+    def _generate_traj_process(self, env, actor, gamma, process_num):
         @contextmanager # supress Gurobi message
         def suppress_stdout():
             with open(os.devnull, "w") as devnull:
@@ -96,7 +96,7 @@ class RolloutGenerator(object):
 
                 t += 1
 
-                # r = r * 10 * (1/t**1.5) # todo new usage of reward
+                # r = r * 10 * (1/t**1.5) # todo reward shaping
                 traj_memory.add_frame(processed_s, a, r)
                 delta = 0
                 if r < delta and t > 20:
@@ -110,31 +110,26 @@ class RolloutGenerator(object):
 
             traj_memory.reward_sums.append(rews)
 
-            Q = discounted_rewards(traj_memory.rewards, gamma)
-
-            val = np.array(Q) - baseline
-            traj_memory.values = val
+            traj_memory.values = discounted_rewards(traj_memory.rewards, gamma)
 
             trajs.append(traj_memory)
         return trajs
 
-    def generate_trajs(self, env, actor, gamma, baseline = 0):
+    def generate_trajs(self, env, actor, gamma):
         if self.num_processes == 1: # don't run in parallel
             DATA = []
-            DATA.append(self._generate_traj_process(env, actor, gamma, 0, baseline))
+            DATA.append(self._generate_traj_process(env, actor, gamma, 0,))
         else:
             env_list = [env] * self.num_processes
             actor_list = [actor] * self.num_processes
             gamma_list = [gamma] * self.num_processes
             i_list = np.arange(self.num_processes)
-            baseline_list = [baseline] * self.num_processes
             with Pool(processes=self.num_processes) as pool:
                 DATA = pool.starmap(self._generate_traj_process,
                                     zip(env_list,
                                         actor_list,
                                         gamma_list,
-                                        i_list,
-                                        baseline_list
+                                        i_list
                                         )
                                     )
             # unpack data

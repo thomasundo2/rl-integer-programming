@@ -6,10 +6,11 @@ import numpy as np
 # run=wandb.init(project="finalproject", entity="ieor-4575", tags=["n=10,m=20,i=1"])
 
 
-from config import configs, params
+from config import gen_actor_params, gen_critic_params, env_configs
 from gymenv_v2 import make_multiple_env
 from rollout_gen import RolloutGenerator
-from policies import AttentionPolicy, RNNPolicy, DensePolicy, RandomPolicy, DoubleAttentionPolicy
+from pg_actors import AttentionPolicy, RNNPolicy, DensePolicy, RandomPolicy, DoubleAttentionPolicy
+from pg_critics import DenseCritic, NoCritic
 from helper import plot_arr
 from logger import RewardLogger
 
@@ -33,42 +34,56 @@ def build_actor(policy_params):
 
     return actor
 
+def build_critic(critic_params):
+    print(critic_params)
+    if critic_params['model'] == 'dense':
+        critic = DenseCritic(**critic_params['model_params'])
+    elif critic_params['model'] == 'None':
+        critic = NoCritic()
+    else:
+        raise NotImplementedError
+    return critic
+
+
 
 def policy_grad(env_config,
                 policy_params,
+                critic_params,
                 iterations=150,
                 num_processes=8,
                 num_trajs_per_process=1,
                 gamma=0.99
                 ):
-    env = make_multiple_env(**env_config)
-
-    actor = build_actor(policy_params)
-
-    rollout_gen = RolloutGenerator(num_processes, num_trajs_per_process, verbose=True)
-
-
-    # todo: temporary until hyperparameters are reformatted
     hyperparams = {"iterations": iterations,
                    "num_processes": num_processes,
                    "num_trajs_per_process": num_trajs_per_process,
                    "gamma": gamma
                    }
-
-    logger = RewardLogger(env_config, policy_params, hyperparams)
-    baseline = 0
-
+    logger = RewardLogger(env_config, policy_params, critic_params, hyperparams)
     rrecord = []
+
+    env = make_multiple_env(**env_config)
+    actor = build_actor(policy_params)
+    critic = build_critic(critic_params)
+
+    rollout_gen = RolloutGenerator(num_processes, num_trajs_per_process, verbose=True)
+
+
 
     for ite in tqdm(range(iterations)):
         if ite % 10 == 0 and ite > 0:
             print(np.mean(rrecord[-10:]))
-        memory = rollout_gen.generate_trajs(env, actor, gamma, baseline)
-        # baseline = np.mean(memory.rewards)
-        memory.values = (memory.values - np.mean(memory.values)) / (np.std(memory.values) + 1e-8)
+        memory = rollout_gen.generate_trajs(env, actor, gamma)
 
-        loss = actor.train(memory)
 
+        critic.train(memory)
+        baselines = critic.compute_values(memory.states)
+
+        memory.advantages = np.array(memory.values) - baselines
+        memory.advantages = (memory.advantages - np.mean(memory.advantages)) \
+                            / (np.std(memory.advantages) + 1e-8)
+
+        actor.train(memory)
         # log results
         rrecord.extend(memory.reward_sums)
         logger.record(memory.reward_sums) # writes record to a file
@@ -78,16 +93,13 @@ def policy_grad(env_config,
 
 
 def main():
-    env_config = configs.easy_config
-    #policy_params = params.gen_rnn_params(n=10, lr = 0.001)
-    # policy_params = params.gen_dense_params(m = 60, n=60, t = 50, lr=0.001)
-    #
-    # policy_params = params.gen_rand_params()
+    env_config = env_configs.starter_config
+    policy_params = gen_actor_params.gen_dense_params(m=20, n=10, t=10, lr=0.001)
+    critic_params = gen_critic_params.gen_no_critic()
+    # critic_params = gen_critic_params.gen_critic_dense(m=20, n=10, t=10, lr=0.001)
 
-    # policy_params = params.gen_dense_params(m = 60, n=60, t = 50, lr=0.001)
-    policy_params = params.gen_attention_params(n = 60, h = 32)
 
-    hyperparams = {"iterations": 1000,  # number of iterations to run policy gradient
+    hyperparams = {"iterations": 500,  # number of iterations to run policy gradient
                    "num_processes": 12,  # number of processes running in parallel
                    "num_trajs_per_process": 1,  # number of trajectories per process
                    "gamma": 0.99  # discount factor
@@ -95,6 +107,7 @@ def main():
 
     policy_grad(env_config,  # environment configuration
                 policy_params,  # actor definition
+                critic_params,
                 **hyperparams
                 )
 

@@ -1,32 +1,35 @@
 import numpy as np
 from pathlib import Path
+import time
 
 
-def get_filename(env_config, policy_params):
+def get_filename(env_config, policy_params, critic_params):
     start_idx = env_config['idx_list'][0]
     end_idx = env_config['idx_list'][-1]
+
+
 
     file_dir = f"records/" \
                f"{env_config['load_dir'][10:]}/" \
                f"idx_{start_idx}_{end_idx}/" \
-               f"{policy_params['model']}/"
+               f"actor_{policy_params['model']}_critic_{critic_params['model']}/"
 
-    file_name = ""
-    for param_name, value in policy_params['model_params'].items():
-        file_name += f"({param_name}_{value})"
+    file_name = time.strftime("%Y%m%d-%H%M%S")
     file_name += ".txt"
 
     return file_dir, file_name
 
 
 class RewardLogger(object):
-    def __init__(self, env_config, policy_params, hyperparameters):
-        file_dir, file_name = get_filename(env_config, policy_params)
+    def __init__(self, env_config, policy_params, critic_params, hyperparameters):
+        file_dir, file_name = get_filename(env_config, policy_params, critic_params)
         Path(file_dir).mkdir(parents=True, exist_ok=True)
 
         self.filepath = file_dir + file_name
 
         with open(self.filepath, "w+") as f:
+            f.write(str(policy_params) + "\n")
+            f.write(str(critic_params) + "\n")
             f.write(str(hyperparameters) + "\n")
 
         # not used but may implement plotting functionality later

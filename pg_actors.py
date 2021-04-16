@@ -170,7 +170,6 @@ class DensePolicy(AbstractPolicy):
 
     def _compute_prob_torch(self, state):
         Ab, c0, cuts = state
-        scores = torch.FloatTensor()
         batch = []
         for cut in cuts:
             x = np.append(Ab.flatten(), cut.flatten())

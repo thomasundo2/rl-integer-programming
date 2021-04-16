@@ -23,9 +23,8 @@ def plot_arr(arr, label = None, window_size = 101):
     arr = np.array(arr)
     if window_size > 1:
         arr = moving_avg(arr, window_size)
-    plt.plot(np.arange(len(arr)), arr)
-    plt.title(label)
-    plt.pause(0.001)
+    plt.plot(np.arange(len(arr)), arr, label = label)
+    plt.title(f"Moving Average Reward, Window Size {window_size}")
 
 
 

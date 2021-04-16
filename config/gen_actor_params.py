@@ -1,11 +1,3 @@
-"""
-# todo: fix parallelization for rnns
-rnn_params = {'model'      : 'rnn',
-              'model_params': {'n'          : 10,
-                               'lr'         : 0.001}
-            }
-"""
-
 # todo: add more model parameters, such as hidden layer size
 def gen_attention_params(n, h=32, lr=0.001):
     return {'model': 'attention',

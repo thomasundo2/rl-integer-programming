@@ -35,7 +35,6 @@ def build_actor(policy_params):
     return actor
 
 def build_critic(critic_params):
-    print(critic_params)
     if critic_params['model'] == 'dense':
         critic = DenseCritic(**critic_params['model_params'])
     elif critic_params['model'] == 'None':
@@ -66,19 +65,15 @@ def policy_grad(env_config,
     actor = build_actor(policy_params)
     critic = build_critic(critic_params)
 
-    rollout_gen = RolloutGenerator(num_processes, num_trajs_per_process, verbose=True)
+    rollout_gen = RolloutGenerator(num_processes, num_trajs_per_process, verbose=False)
 
 
 
     for ite in tqdm(range(iterations)):
-        if ite % 10 == 0 and ite > 0:
-            print(np.mean(rrecord[-10:]))
         memory = rollout_gen.generate_trajs(env, actor, gamma)
-
 
         critic.train(memory)
         baselines = critic.compute_values(memory.states)
-
         memory.advantages = np.array(memory.values) - baselines
         memory.advantages = (memory.advantages - np.mean(memory.advantages)) \
                             / (np.std(memory.advantages) + 1e-8)
@@ -93,23 +88,84 @@ def policy_grad(env_config,
 
 
 def main():
-    env_config = env_configs.starter_config
-    policy_params = gen_actor_params.gen_dense_params(m=20, n=10, t=10, lr=0.001)
-    critic_params = gen_critic_params.gen_no_critic()
+    env_config = env_configs.veryeasy_config
+    policy_params = gen_actor_params.gen_attention_params(n=25, h=60, lr=0.001)
+    critic_params = gen_critic_params.gen_critic_dense(m=25, n=25, t=20, lr=0.001)
     # critic_params = gen_critic_params.gen_critic_dense(m=20, n=10, t=10, lr=0.001)
 
 
-    hyperparams = {"iterations": 500,  # number of iterations to run policy gradient
+    hyperparams = {"iterations": 750,  # number of iterations to run policy gradient
                    "num_processes": 12,  # number of processes running in parallel
                    "num_trajs_per_process": 1,  # number of trajectories per process
                    "gamma": 0.99  # discount factor
                    }
+    print("DENSE CRITIC, ATTENTION POLICY")
+    policy_grad(env_config,  # environment configuration
+                policy_params,  # actor definition
+                critic_params,
+                **hyperparams
+                )
+
+
+    policy_params = gen_actor_params.gen_dense_params(m=25, n=25, t=20, lr=0.001)
+    print("DENSE CRITIC, DENSE POLICY")
+    policy_grad(env_config,  # environment configuration
+                policy_params,  # actor definition
+                critic_params,
+                **hyperparams
+                )
+
+
+
+    #### try with more trajectories no critic
+
+    critic_params = gen_critic_params.gen_no_critic()
+    hyperparams = {"iterations": 350,  # number of iterations to run policy gradient
+                   "num_processes": 12,  # number of processes running in parallel
+                   "num_trajs_per_process": 2,  # number of trajectories per process
+                   "gamma": 0.99  # discount factor
+                   }
+
+    policy_params = gen_actor_params.gen_dense_params(m=25, n=25, t=20, lr=0.001)
 
     policy_grad(env_config,  # environment configuration
                 policy_params,  # actor definition
                 critic_params,
                 **hyperparams
                 )
+
+    policy_params = gen_actor_params.gen_attention_params(n=25, h=60, lr=0.001)
+
+    policy_grad(env_config,  # environment configuration
+                policy_params,  # actor definition
+                critic_params,
+                **hyperparams
+                )
+
+    critic_params = gen_critic_params.gen_critic_dense(m=25, n=25, t=20, lr=0.001)
+    policy_params = gen_actor_params.gen_dense_params(m=25, n=25, t=20, lr=0.001)
+
+    policy_grad(env_config,  # environment configuration
+                policy_params,  # actor definition
+                critic_params,
+                **hyperparams
+                )
+
+    policy_params = gen_actor_params.gen_attention_params(n=25, h=60, lr=0.001)
+
+    policy_grad(env_config,  # environment configuration
+                policy_params,  # actor definition
+                critic_params,
+                **hyperparams
+                )
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':

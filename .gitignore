@@ -6,3 +6,4 @@ wandb/
 instances/
 records/
 *.ipynb
+figures/

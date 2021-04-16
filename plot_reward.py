@@ -37,8 +37,10 @@ def main():
                  "records/randomip_n25_m25/idx_0_0/actor_dense_critic_dense/20210416-150828.txt",
                  "records/randomip_n25_m25/idx_0_0/actor_dense_critic_dense/20210416-120436.txt",
                  "records/randomip_n25_m25/idx_0_0/actor_dense_critic_None/20210416-130451.txt",
-                 "records/randomip_n25_m25/idx_0_0/actor_double_attention_critic_dense/20210416-034925.txt"
+                 "records/randomip_n25_m25/idx_0_0/actor_double_attention_critic_dense/20210416-034925.txt",
+                 "records/randomip_n25_m25/idx_0_0/actor_attention_critic_None/20210416-171650.txt"
                 ]
+
     plot_rewards(filepaths)
 
 

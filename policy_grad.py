@@ -69,7 +69,7 @@ def policy_grad(env_config,
 
 
 
-    for ite in tqdm(range(iterations)):
+    for _ in tqdm(range(iterations)):
         memory = rollout_gen.generate_trajs(env, actor, gamma)
 
         critic.train(memory)
@@ -89,78 +89,21 @@ def policy_grad(env_config,
 
 def main():
     env_config = env_configs.veryeasy_config
-    policy_params = gen_actor_params.gen_attention_params(n=25, h=60, lr=0.001)
-    critic_params = gen_critic_params.gen_critic_dense(m=25, n=25, t=20, lr=0.001)
+    policy_params = gen_actor_params.gen_dense_params(m=25, n=25, t=20, lr=0.001)
+    critic_params = gen_critic_params.gen_no_critic()
     # critic_params = gen_critic_params.gen_critic_dense(m=20, n=10, t=10, lr=0.001)
 
 
-    hyperparams = {"iterations": 750,  # number of iterations to run policy gradient
-                   "num_processes": 12,  # number of processes running in parallel
+    hyperparams = {"iterations": 300,  # number of iterations to run policy gradient
+                   "num_processes": 6,  # number of processes running in parallel
                    "num_trajs_per_process": 1,  # number of trajectories per process
                    "gamma": 0.99  # discount factor
                    }
-    print("DENSE CRITIC, ATTENTION POLICY")
     policy_grad(env_config,  # environment configuration
                 policy_params,  # actor definition
                 critic_params,
                 **hyperparams
                 )
-
-
-    policy_params = gen_actor_params.gen_dense_params(m=25, n=25, t=20, lr=0.001)
-    print("DENSE CRITIC, DENSE POLICY")
-    policy_grad(env_config,  # environment configuration
-                policy_params,  # actor definition
-                critic_params,
-                **hyperparams
-                )
-
-
-
-    #### try with more trajectories no critic
-
-    critic_params = gen_critic_params.gen_no_critic()
-    hyperparams = {"iterations": 350,  # number of iterations to run policy gradient
-                   "num_processes": 12,  # number of processes running in parallel
-                   "num_trajs_per_process": 2,  # number of trajectories per process
-                   "gamma": 0.99  # discount factor
-                   }
-
-    policy_params = gen_actor_params.gen_dense_params(m=25, n=25, t=20, lr=0.001)
-
-    policy_grad(env_config,  # environment configuration
-                policy_params,  # actor definition
-                critic_params,
-                **hyperparams
-                )
-
-    policy_params = gen_actor_params.gen_attention_params(n=25, h=60, lr=0.001)
-
-    policy_grad(env_config,  # environment configuration
-                policy_params,  # actor definition
-                critic_params,
-                **hyperparams
-                )
-
-    critic_params = gen_critic_params.gen_critic_dense(m=25, n=25, t=20, lr=0.001)
-    policy_params = gen_actor_params.gen_dense_params(m=25, n=25, t=20, lr=0.001)
-
-    policy_grad(env_config,  # environment configuration
-                policy_params,  # actor definition
-                critic_params,
-                **hyperparams
-                )
-
-    policy_params = gen_actor_params.gen_attention_params(n=25, h=60, lr=0.001)
-
-    policy_grad(env_config,  # environment configuration
-                policy_params,  # actor definition
-                critic_params,
-                **hyperparams
-                )
-
-
-
 
 
 

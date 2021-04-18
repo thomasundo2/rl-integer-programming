@@ -9,41 +9,8 @@ import numpy as np
 from config import gen_actor_params, gen_critic_params, env_configs
 from gymenv_v2 import make_multiple_env
 from rollout_gen import RolloutGenerator
-from pg_actors import AttentionPolicy, RNNPolicy, DensePolicy, RandomPolicy, DoubleAttentionPolicy
-from pg_critics import DenseCritic, NoCritic
-from helper import plot_arr
+from helper import plot_arr, build_actor, build_critic
 from logger import RewardLogger
-
-
-def build_actor(policy_params):
-    """returns the type of model within policy_params
-    """
-    # determine the type of model
-    if policy_params['model'] == 'dense':
-        actor = DensePolicy(**policy_params['model_params'])
-    elif policy_params['model'] == 'rnn':
-        actor = RNNPolicy(**policy_params['model_params'])
-    elif policy_params['model'] == 'attention':
-        actor = AttentionPolicy(**policy_params['model_params'])
-    elif policy_params['model'] == 'random':
-        actor = RandomPolicy(**policy_params['model_params'])
-    elif policy_params['model'] == 'double_attention':
-        actor = DoubleAttentionPolicy(**policy_params['model_params'])
-    else:
-        raise NotImplementedError
-
-    return actor
-
-def build_critic(critic_params):
-    if critic_params['model'] == 'dense':
-        critic = DenseCritic(**critic_params['model_params'])
-    elif critic_params['model'] == 'None':
-        critic = NoCritic()
-    else:
-        raise NotImplementedError
-    return critic
-
-
 
 def policy_grad(env_config,
                 policy_params,
@@ -72,6 +39,8 @@ def policy_grad(env_config,
     for _ in tqdm(range(iterations)):
         memory = rollout_gen.generate_trajs(env, actor, gamma)
 
+
+        # TODO: make a actor-critic policy gradient
         critic.train(memory)
         baselines = critic.compute_values(memory.states)
         memory.advantages = np.array(memory.values) - baselines
@@ -95,7 +64,7 @@ def main():
 
 
     hyperparams = {"iterations": 300,  # number of iterations to run policy gradient
-                   "num_processes": 6,  # number of processes running in parallel
+                   "num_processes": 4,  # number of processes running in parallel
                    "num_trajs_per_process": 1,  # number of trajectories per process
                    "gamma": 0.99  # discount factor
                    }

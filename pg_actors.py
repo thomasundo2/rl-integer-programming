@@ -3,9 +3,9 @@ import numpy as np
 
 from basepolicy import AbstractPolicy
 
-class RandomPolicy(AbstractPolicy):
+class RandomPolicy(torch.nn.Module, AbstractPolicy):
     def __init__(self):
-        pass
+        super(RandomPolicy, self).__init__()
 
     def _compute_prob_torch(self, state):
         Ab, c0, cuts = state
@@ -17,12 +17,13 @@ class RandomPolicy(AbstractPolicy):
         return loss
 
 
-class AttentionPolicy(AbstractPolicy):
+class AttentionPolicy(torch.nn.Module, AbstractPolicy):
     def __init__(self, n, h, lr):
         """
         n: size of constraints and the b
         h: size of output
         """
+        super(AttentionPolicy, self).__init__()
         self.model = torch.nn.Sequential(
             # input layer
             torch.nn.Linear(n+1, 128),
@@ -53,7 +54,7 @@ class AttentionPolicy(AbstractPolicy):
         return prob
 
 
-class DoubleAttentionPolicy(AbstractPolicy):
+class DoubleAttentionPolicy(torch.nn.Module, AbstractPolicy):
     """uses two MLP's to calculate the loss
     """
     def __init__(self, n, h, lr):
@@ -61,6 +62,7 @@ class DoubleAttentionPolicy(AbstractPolicy):
         n: size of constraints and the b
         h: size of output
         """
+        super(DoubleAttentionPolicy, self).__init__()
         self.model_1 = torch.nn.Sequential(
             # input layer
             torch.nn.Linear(n+1, 128),
@@ -104,11 +106,12 @@ class DoubleAttentionPolicy(AbstractPolicy):
         return prob
 
 
-class RNNPolicy(AbstractPolicy):
+class RNNPolicy(torch.nn.Module, AbstractPolicy):
     def __init__(self, n, lr):
         """
         num_dec_vars is n
         """
+        super(RNNPolicy, self).__init__()
         self.model = RecurrentNetwork(n+1)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
 
@@ -145,13 +148,14 @@ class RecurrentNetwork(torch.nn.Module):
         prob = torch.nn.functional.softmax(scores, dim=0)
         return prob
 
-class DensePolicy(AbstractPolicy):
+class DensePolicy(torch.nn.Module, AbstractPolicy):
     def __init__(self, m, n, t, lr):
         """
         max_input is the size of the maximum state + size of maximum action
         Let t be the max number of timesteps, ie the max number of cuts added
         maximum state/action size: (m + t - 1 + 1, n+1)
         """
+        super(DensePolicy, self).__init__()
         self.model = torch.nn.Sequential(
             # input layer
             torch.nn.Linear((m + t) * (n + 1), 256),

@@ -4,10 +4,12 @@ from abc import ABC, abstractmethod
 
 
 class AbstractPolicy(ABC):
-    @abstractmethod
     def __init__(self):
         # define a model and parameters
         pass
+
+    def forward(self):
+        raise NotImplementedError
 
     @abstractmethod
     def _compute_prob_torch(self, state):

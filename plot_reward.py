@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+plt.style.use('ggplot')
 import time
 
 from config import env_configs, gen_actor_params, gen_critic_params
@@ -14,9 +15,11 @@ def plot_rewards(filepaths):
         plot_arr(reward_sums, label=label, window_size=100)
     plt.legend()
     curr_time = time.strftime("%Y%m%d-%H%M%S")
-    plt.savefig(f"figures/{curr_time}.jpeg")
+
     plt.xlabel("trajectory")
     plt.ylabel("Reward Summation")
+
+    plt.savefig(f"figures/{curr_time}.jpeg")
     plt.show()
 def main():
     """
@@ -31,16 +34,18 @@ def main():
     label = f"Actor: {policy_params['model']}, Critic: {critic_params['model']}"
     plot_arr(reward_sums, label=label, window_size=100)
     """
-    filepaths = ["records/randomip_n25_m25/idx_0_0/actor_attention_critic_dense/20210416-161140.txt",
+    filepaths_25 = ["records/randomip_n25_m25/idx_0_0/actor_attention_critic_dense/20210416-161140.txt",
                 "records/randomip_n25_m25/idx_0_0/actor_attention_critic_dense/20210416-111758.txt",
                  "records/randomip_n25_m25/idx_0_0/actor_attention_critic_None/20210416-140850.txt",
                  "records/randomip_n25_m25/idx_0_0/actor_dense_critic_dense/20210416-150828.txt",
                  "records/randomip_n25_m25/idx_0_0/actor_dense_critic_dense/20210416-120436.txt",
                  "records/randomip_n25_m25/idx_0_0/actor_dense_critic_None/20210416-130451.txt",
                  "records/randomip_n25_m25/idx_0_0/actor_double_attention_critic_dense/20210416-034925.txt",
-                 "records/randomip_n25_m25/idx_0_0/actor_attention_critic_None/20210416-171650.txt"
+                 "records/randomip_n25_m25/idx_0_0/actor_attention_critic_None/20210416-171650.txt",
+                 "records/randomip_n10_m20/idx_0_4/actor_dense_critic_None/20210417-010043.txt"
                 ]
 
+    filepaths = ["records/train_100_n60_m60/idx_0_98/actor_dense_critic_None/20210416-195226.txt"]
     plot_rewards(filepaths)
 
 

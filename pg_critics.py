@@ -1,15 +1,18 @@
 import torch
 import numpy as np
 
+
 from basecritic import AbstractCritic
 
-class DenseCritic(AbstractCritic):
+class DenseCritic(AbstractCritic, torch.nn.Module):
     def __init__(self, m, n, t, lr=0.001):
         """
         max_input is the size of the maximum state size
         Let t be the max number of timesteps,
         maximum state/action size: (m + t - 1, n+1)
         """
+        super(DenseCritic, self).__init__()
+
         self.model = torch.nn.Sequential(
             # input layer
             torch.nn.Linear((m + t - 1) * (n + 1), 256),

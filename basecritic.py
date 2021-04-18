@@ -4,10 +4,11 @@ from abc import ABC, abstractmethod
 
 
 class AbstractCritic(ABC):
-    @abstractmethod
-    def __init__(self, obssize, lr):
+    def __init__(self):
         pass
 
+    def forward(self):
+        raise NotImplementedError
     @abstractmethod
     def _compute_values_torch(self, states):
         # given an array of states, compute the estimated values

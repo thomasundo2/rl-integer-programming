@@ -29,19 +29,30 @@ class PPO: # TODO: PPO is usually used with tanh activation functions, but they 
         self.epochs = epochs
         self.MseLoss = torch.nn.MSELoss()
 
+        # todo: create parameters for these hardcoded values
+        self.eps_clip = 0.2
+        self.entropy_coeff = 0.01
+
     def _compute_prob_torch(self, state):
         return self.policy_old._compute_prob_torch(state)
 
     def compute_prob(self, state):
         return self.policy_old.compute_prob(state)
 
+    def compute_val(self, state):
     def _compute_loss(self, memory):
-        # computes the loss of a single epoch
-
+        # computes the loss of a single epoch, given a set of trajectories
+        loss = 0
         for i, state in enumerate(memory.states):
+            # compute advantage
+            baseline = self.critic._compute_value_torch(state)
+            advantage = memory.values[i] - baseline.detach()
+
             action = int(memory.actions[i])
             prob = self.policy._compute_prob_torch(state)
-            prob_old =  self.policy_old._compute_prob_torch(state)
+            prob_old =  self.policy_old._compute_prob_torch(state).detach()
+
+            dist_entropy = torch.distributions.Categorical(prob).entropy()
 
             k = len(prob)
             action_onehot = np.zeros(k)
@@ -49,16 +60,23 @@ class PPO: # TODO: PPO is usually used with tanh activation functions, but they 
             action_onehot = torch.FloatTensor(action_onehot)
 
             prob_selected = torch.matmul(prob, action_onehot)
-            prob_selected_old = torch.matmul(prob, action_onehot)
+            prob_selected_old = torch.matmul(prob_old, action_onehot)
 
+            ratio = prob_selected / prob_selected_old
 
-
+            surr1 = ratio * advantage
+            surr2 = torch.clamp(ratio, 1 - self.eps_clip, 1 + self.eps_clip) * advantage
+            loss += -torch.min(surr1, surr2) + 0.5 * self.MseLoss(baseline, memory.values[i]) - 0.01 * dist_entropy
+        loss = -loss / len(memory.states)
+        assert loss.requires_grad == True
+        return loss
 
 
     def train(self, memory):
         # from here, memory.advantages must be computed, however rewards are preprocessed
         # todo: preprocessing needs to be normalized across the code
         for _ in range(self.epochs):
+
 
 
 

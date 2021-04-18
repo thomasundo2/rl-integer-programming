@@ -28,6 +28,13 @@ class DenseCritic(AbstractCritic, torch.nn.Module):
 
         # DEFINE THE OPTIMIZER
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
+    def _compute_value_torch(self, state): # use batched version when possible
+        Ab, _, _ = state
+        x = Ab.flatten()
+        padded_x = np.append(x, np.zeros(self.full_length - len(x)))
+
+        score = self.model(padded_x).flatten()
+        return score
     def _compute_values_torch(self, states):
         batch = []
         for state in states:
@@ -47,7 +54,7 @@ class NoCritic(AbstractCritic):
         pass
 
     def _compute_values_torch(self, states):
-        pass
+        return torch.Tensor(np.zeros(len(states)))
 
     def compute_values(self, states):
         return np.zeros(len(states)) # baseline is zero

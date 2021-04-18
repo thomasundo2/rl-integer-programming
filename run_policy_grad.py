@@ -9,8 +9,9 @@ import numpy as np
 from config import gen_actor_params, gen_critic_params, env_configs
 from gymenv_v2 import make_multiple_env
 from rollout_gen import RolloutGenerator
-from helper import plot_arr, build_actor, build_critic
+from helper import plot_arr
 from logger import RewardLogger
+from build_actor_critic import build_actor, build_critic
 
 def policy_grad(env_config,
                 policy_params,
@@ -58,13 +59,14 @@ def policy_grad(env_config,
 
 def main():
     env_config = env_configs.veryeasy_config
-    policy_params = gen_actor_params.gen_dense_params(m=25, n=25, t=20, lr=0.001)
+    # policy_params = gen_actor_params.gen_dense_params(m=20, n=10, t=10, lr=0.001)
+    policy_params = gen_actor_params.gen_attention_params(n=25, h=32)
     critic_params = gen_critic_params.gen_no_critic()
     # critic_params = gen_critic_params.gen_critic_dense(m=20, n=10, t=10, lr=0.001)
 
 
-    hyperparams = {"iterations": 300,  # number of iterations to run policy gradient
-                   "num_processes": 4,  # number of processes running in parallel
+    hyperparams = {"iterations": 100,  # number of iterations to run policy gradient
+                   "num_processes": 6,  # number of processes running in parallel
                    "num_trajs_per_process": 1,  # number of trajectories per process
                    "gamma": 0.99  # discount factor
                    }

@@ -3,17 +3,21 @@ from pathlib import Path
 import time
 
 
-def get_filename(env_config, policy_params, critic_params):
+def get_filename(env_config, policy_params, critic_params, ppo_tag = False):
     start_idx = env_config['idx_list'][0]
     end_idx = env_config['idx_list'][-1]
 
 
-
-    file_dir = f"records/" \
-               f"{env_config['load_dir'][10:]}/" \
-               f"idx_{start_idx}_{end_idx}/" \
-               f"actor_{policy_params['model']}_critic_{critic_params['model']}/"
-
+    if ppo_tag:
+        file_dir = f"records/" \
+                   f"{env_config['load_dir'][10:]}/" \
+                   f"idx_{start_idx}_{end_idx}/" \
+                   f"ppo_actor_{policy_params['model']}_critic_{critic_params['model']}/"
+    else:
+        file_dir = f"records/" \
+                   f"{env_config['load_dir'][10:]}/" \
+                   f"idx_{start_idx}_{end_idx}/" \
+                   f"actor_{policy_params['model']}_critic_{critic_params['model']}/"
     file_name = time.strftime("%Y%m%d-%H%M%S")
     file_name += ".txt"
 
@@ -21,8 +25,9 @@ def get_filename(env_config, policy_params, critic_params):
 
 
 class RewardLogger(object):
-    def __init__(self, env_config, policy_params, critic_params, hyperparameters):
-        file_dir, file_name = get_filename(env_config, policy_params, critic_params)
+    # todo: when actor critic are combined and ppo config is implemented, get rid of ppo tag
+    def __init__(self, env_config, policy_params, critic_params, hyperparameters, ppo_tag = False):
+        file_dir, file_name = get_filename(env_config, policy_params, critic_params, ppo_tag)
         Path(file_dir).mkdir(parents=True, exist_ok=True)
 
         self.filepath = file_dir + file_name

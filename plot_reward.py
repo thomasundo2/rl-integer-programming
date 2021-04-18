@@ -45,7 +45,11 @@ def main():
                  "records/randomip_n10_m20/idx_0_4/actor_dense_critic_None/20210417-010043.txt"
                 ]
 
-    filepaths = ["records/train_100_n60_m60/idx_0_98/actor_dense_critic_None/20210416-195226.txt"]
+    filepaths = ["records/randomip_n25_m25/idx_0_0/actor_attention_critic_None/20210416-171650.txt",
+                 "records/randomip_n25_m25/idx_0_0/actor_dense_critic_None/20210417-012743.txt",
+                 "records/randomip_n25_m25/idx_0_0/actor_attention_critic_dense/20210416-161140.txt",
+                 "records/randomip_n25_m25/idx_0_0/actor_attention_critic_None/20210418-161443.txt"]
+
     plot_rewards(filepaths)
 
 

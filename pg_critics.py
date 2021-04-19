@@ -4,7 +4,7 @@ import numpy as np
 
 from basecritic import AbstractCritic
 
-class DenseCritic(AbstractCritic, torch.nn.Module):
+class DenseCritic(torch.nn.Module, AbstractCritic):
     def __init__(self, m, n, t, lr=0.001):
         """
         max_input is the size of the maximum state size
@@ -33,7 +33,7 @@ class DenseCritic(AbstractCritic, torch.nn.Module):
         x = Ab.flatten()
         padded_x = np.append(x, np.zeros(self.full_length - len(x)))
 
-        score = self.model(padded_x).flatten()
+        score = self.model(torch.FloatTensor(padded_x)).flatten()
         return score
     def _compute_values_torch(self, states):
         batch = []

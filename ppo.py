@@ -25,7 +25,6 @@ class PPOPolicy:  # TODO: PPO is usually used with tanh activation functions, bu
         self.policy_old.load_state_dict(self.policy.state_dict())
 
         self.epochs = epochs
-        self.MseLoss = torch.nn.MSELoss()
 
         # todo: create parameters for these hardcoded values
         self.eps_clip = eps_clip
@@ -50,6 +49,9 @@ class PPOPolicy:  # TODO: PPO is usually used with tanh activation functions, bu
             else:
                 advantage = memory.values[i]
 
+            if len(memory.intrinsic_values) > 0:
+                advantage += memory.intrinsic_values[i]
+
             action = int(memory.actions[i])
             prob = self.policy._compute_prob_torch(state)
             prob_old = self.policy_old._compute_prob_torch(state).detach()
@@ -69,12 +71,12 @@ class PPOPolicy:  # TODO: PPO is usually used with tanh activation functions, bu
             surr1 = ratio * advantage
             surr2 = torch.clamp(ratio, 1 - self.eps_clip, 1 + self.eps_clip) * advantage
             if self.uses_critic:
-                loss += torch.min(surr1, surr2) - 0.5 * self.MseLoss(baseline, memory.values[i]) + 0.01 * dist_entropy
+                mse = (memory.values[i] - baseline)**2
+                loss += torch.min(surr1, surr2) - 0.5 * mse + 0.01 * dist_entropy
             else:
                 loss += torch.min(surr1, surr2) + 0.01 * dist_entropy
             entropies.append(dist_entropy.detach())
         loss = -loss / len(memory.states)
-        print(np.mean(entropies))
         assert loss.requires_grad == True
         return loss
 

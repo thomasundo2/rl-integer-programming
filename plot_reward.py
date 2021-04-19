@@ -7,11 +7,14 @@ from logger import get_filename
 from helper import plot_arr, get_reward_sums
 
 
-def plot_rewards(filepaths):
+def plot_rewards(filepaths, labels = None):
     plt.figure(figsize=(15, 10), dpi=80)
-    for filepath in filepaths:
+    for i, filepath in enumerate(filepaths):
         reward_sums = get_reward_sums(filepath)
-        label = filepath
+        if labels == None:
+            label = filepath
+        else:
+            label = labels[i]
         plot_arr(reward_sums, label=label, window_size=100)
     plt.legend()
     curr_time = time.strftime("%Y%m%d-%H%M%S")
@@ -45,12 +48,37 @@ def main():
                  "records/randomip_n10_m20/idx_0_4/actor_dense_critic_None/20210417-010043.txt"
                 ]
 
-    filepaths = ["records/randomip_n25_m25/idx_0_0/actor_attention_critic_None/20210416-171650.txt",
-                 "records/randomip_n25_m25/idx_0_0/actor_dense_critic_None/20210417-012743.txt",
-                 "records/randomip_n25_m25/idx_0_0/actor_attention_critic_dense/20210416-161140.txt",
-                 "records/randomip_n25_m25/idx_0_0/actor_attention_critic_None/20210418-161443.txt"]
+    filepaths = ["records/randomip_n10_m20/idx_0_0/actor_attention_critic_None/20210418-161243.txt",
+                 "records/randomip_n10_m20/idx_0_0/actor_dense_critic_None/20210418-161009.txt",
+                 "records/randomip_n10_m20/idx_0_0/attention/(n_10)(h_32)(lr_0.001).txt",
+                 "records/randomip_n10_m20/idx_0_0/ppo_actor_dense_critic_None/20210418-184012.txt"
+                 ]
 
-    plot_rewards(filepaths)
+    filepaths = ["records/randomip_n10_m20/idx_50_59/ppo_actor_dense_critic_None/20210418-190049.txt",
+                 "records/randomip_n10_m20/idx_50_59/actor_dense_critic_None/20210418-190104.txt",
+                 "records/randomip_n10_m20/idx_50_59/ppo_actor_dense_critic_None/20210418-220638.txt",
+                 "records/randomip_n10_m20/idx_50_59/actor_dense_critic_None/20210418-220618.txt"
+                 ]
+
+    """filepaths = ["records/randomip_n25_m25/idx_0_0/actor_dense_critic_None/20210418-222700.txt", # with rnd
+                 "records/randomip_n25_m25/idx_0_0/actor_dense_critic_None/20210418-222937.txt",
+                 "records/randomip_n25_m25/idx_0_0/ppo_actor_dense_critic_None/20210418-222154.txt", # ppo with exploration
+                 "records/randomip_n25_m25/idx_0_0/actor_dense_critic_dense/20210416-120436.txt",
+                 "records/randomip_n25_m25/idx_0_0/actor_dense_critic_None/20210416-185748.txt"
+                 ]"""
+
+    """
+    STARTER CONFIG 2, WILL TEST FOR THE BEST ALGORITHMS!!!!
+    """
+    filepaths = ["records/randomip_n15_m15/idx_0_4/actor_random_critic_None_rnd_None/20210418-232807.txt",
+                 "records/randomip_n15_m15/idx_0_4/ppo_actor_dense_critic_None_rnd_None/20210419-001441.txt",
+                 "records/randomip_n15_m15/idx_0_4/actor_dense_critic_None_rnd_None/20210419-010446.txt"]
+    # labels corresponds to the filepath
+    labels = ["Random Policy",
+              "PPO (Dense Network, No Critic)",
+              "Policy Grad (Dense Network, No Critic)"]
+    plot_rewards(filepaths, labels)
+
 
 
 if __name__ == '__main__':

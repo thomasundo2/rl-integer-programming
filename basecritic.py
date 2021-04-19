@@ -9,6 +9,7 @@ class AbstractCritic(ABC):
 
     def forward(self):
         raise NotImplementedError
+
     @abstractmethod
     def _compute_values_torch(self, states):
         # given an array of states, compute the estimated values

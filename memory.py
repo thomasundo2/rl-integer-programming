@@ -8,8 +8,10 @@ class Memory(object):
         self.states = []  # each element of [Ab, c0, cuts]
         self.actions = []
         self.rewards = []  # each element contains trajectory of raw rewards
+        self.intrinsic_rewards = [] # intrinsic rewards if RND is used
         self.isdone = []
         self.values = []  # discounted reward
+        self.intrinsic_values = [] # discounted intrinsic reward
         self.reward_sums = []  # each trajectory's sum of rewards, for plotting
         self.advantages = []
 
@@ -31,7 +33,11 @@ class MasterMemory(Memory):
     def add_trajectory(self, trajectory_memory):
         self.states.extend(trajectory_memory.states)
         self.actions.extend(trajectory_memory.actions)
+
         self.rewards.extend(trajectory_memory.rewards)
+        self.intrinsic_rewards.extend(trajectory_memory.intrinsic_rewards)
+
         self.values.extend(trajectory_memory.values)
+        self.intrinsic_values.extend(trajectory_memory.intrinsic_values)
 
         self.reward_sums.extend(trajectory_memory.reward_sums)

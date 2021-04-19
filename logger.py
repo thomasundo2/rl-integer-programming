@@ -3,7 +3,7 @@ from pathlib import Path
 import time
 
 
-def get_filename(env_config, policy_params, critic_params, ppo_tag = False):
+def get_filename(env_config, policy_params, critic_params, rnd_params, ppo_tag = False):
     start_idx = env_config['idx_list'][0]
     end_idx = env_config['idx_list'][-1]
 
@@ -12,12 +12,12 @@ def get_filename(env_config, policy_params, critic_params, ppo_tag = False):
         file_dir = f"records/" \
                    f"{env_config['load_dir'][10:]}/" \
                    f"idx_{start_idx}_{end_idx}/" \
-                   f"ppo_actor_{policy_params['model']}_critic_{critic_params['model']}/"
+                   f"ppo_actor_{policy_params['model']}_critic_{critic_params['model']}_rnd_{rnd_params['model']}/"
     else:
         file_dir = f"records/" \
                    f"{env_config['load_dir'][10:]}/" \
                    f"idx_{start_idx}_{end_idx}/" \
-                   f"actor_{policy_params['model']}_critic_{critic_params['model']}/"
+                   f"actor_{policy_params['model']}_critic_{critic_params['model']}_rnd_{rnd_params['model']}/"
     file_name = time.strftime("%Y%m%d-%H%M%S")
     file_name += ".txt"
 
@@ -26,8 +26,8 @@ def get_filename(env_config, policy_params, critic_params, ppo_tag = False):
 
 class RewardLogger(object):
     # todo: when actor critic are combined and ppo config is implemented, get rid of ppo tag
-    def __init__(self, env_config, policy_params, critic_params, hyperparameters, ppo_tag = False):
-        file_dir, file_name = get_filename(env_config, policy_params, critic_params, ppo_tag)
+    def __init__(self, env_config, policy_params, critic_params, rnd_params, hyperparameters, ppo_tag = False):
+        file_dir, file_name = get_filename(env_config, policy_params, critic_params, rnd_params, ppo_tag)
         Path(file_dir).mkdir(parents=True, exist_ok=True)
 
         self.filepath = file_dir + file_name
@@ -35,6 +35,7 @@ class RewardLogger(object):
         with open(self.filepath, "w+") as f:
             f.write(str(policy_params) + "\n")
             f.write(str(critic_params) + "\n")
+            f.write(str(rnd_params) + "\n")
             f.write(str(hyperparameters) + "\n")
 
         # not used but may implement plotting functionality later

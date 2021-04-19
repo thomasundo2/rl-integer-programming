@@ -62,7 +62,7 @@ class RolloutGenerator(object):
 
 
 
-    def _generate_traj_process(self, env, actor, gamma, process_num):
+    def _generate_traj_process(self, env, actor, gamma, process_num, rnd, intrinsic_gamma):
         @contextmanager # supress Gurobi message
         def suppress_stdout():
             with open(os.devnull, "w") as devnull:
@@ -84,6 +84,10 @@ class RolloutGenerator(object):
             t = 0
             traj_memory = TrajMemory()
             rews = 0
+            if rnd != None: # add intrinsic reward for the starts of instances
+                intrinsic_r = rnd.compute_intrinsic_reward(processed_s)
+                traj_memory.intrinsic_rewards.append(intrinsic_r)
+
             while not d:
                 actsize = len(processed_s[-1])  # k
                 prob = actor.compute_prob(processed_s)
@@ -93,17 +97,20 @@ class RolloutGenerator(object):
 
                 new_s, r, d, _ = env.step([a])
                 rews += r # keep the original reward tracking unchanged
-
                 t += 1
 
-                # r = r * 10 * (1/t**1.5) # todo reward shaping
                 traj_memory.add_frame(processed_s, a, r)
+                if not d:
+                    processed_s = self._condense_state(new_s)
+                    if rnd != None:
+                        intrinsic_r= rnd.compute_intrinsic_reward(processed_s)
+                        traj_memory.intrinsic_rewards.append(intrinsic_r)
+
+                # todo: try early stopping?
                 delta = 0
                 if r < delta and t > 20:
                     break
 
-                if not d:
-                    processed_s = self._condense_state(new_s)
             if self.verbose:
                 print(f"[{process_num}] rews: {rews} \t t: {t}")
 
@@ -111,25 +118,32 @@ class RolloutGenerator(object):
             traj_memory.reward_sums.append(rews)
 
             traj_memory.values = discounted_rewards(traj_memory.rewards, gamma)
+            if rnd != None:
+                traj_memory.intrinsic_values = discounted_rewards(traj_memory.intrinsic_rewards, intrinsic_gamma)
 
             trajs.append(traj_memory)
         return trajs
 
-    def generate_trajs(self, env, actor, gamma):
+    def generate_trajs(self, env, actor, rnd, gamma, intrinsic_gamma):
         if self.num_processes == 1: # don't run in parallel
             DATA = []
-            DATA.append(self._generate_traj_process(env, actor, gamma, 0,))
+            DATA.append(self._generate_traj_process(env, actor, gamma, 0, rnd, intrinsic_gamma))
         else:
             env_list = [env] * self.num_processes
             actor_list = [actor] * self.num_processes
             gamma_list = [gamma] * self.num_processes
+            rnd_list = [rnd] * self.num_processes
             i_list = np.arange(self.num_processes)
+            intrinsic_gamma_list = [intrinsic_gamma] * self.num_processes
+
             with Pool(processes=self.num_processes) as pool:
                 DATA = pool.starmap(self._generate_traj_process,
                                     zip(env_list,
                                         actor_list,
                                         gamma_list,
-                                        i_list
+                                        i_list,
+                                        rnd_list,
+                                        intrinsic_gamma_list
                                         )
                                     )
             # unpack data

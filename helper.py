@@ -37,8 +37,8 @@ def get_reward_sums(filepath):
 
     reward_sums = []
     for i, reward_sum in enumerate(f):
-        if i < 3:
-            continue  # parameter descriptions
+        if i < 4: # skip parameter descriptions
+            continue
         try:
             reward_sums.append(float(reward_sum))
         except ValueError:

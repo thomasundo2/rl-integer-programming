@@ -76,6 +76,8 @@ class RolloutGenerator(object):
         np.random.seed()
         trajs = []
 
+        if self.verbose:
+            print(f"[{process_num}] Starting trajectory Rollout.")
         for num in range(self.num_trajs_per_process):
             with suppress_stdout():  # remove the Gurobi std out
                 s = env.reset()  # samples a random instance every time env.reset() is called
@@ -98,8 +100,12 @@ class RolloutGenerator(object):
                 new_s, r, d, _ = env.step([a])
                 rews += r # keep the original reward tracking unchanged
                 t += 1
-
                 traj_memory.add_frame(processed_s, a, r)
+
+                if t > 20 and (np.array(traj_memory.rewards[-10:]) == 0).all() == True:
+                    d = True
+
+
                 if not d:
                     processed_s = self._condense_state(new_s)
                     if rnd != None:

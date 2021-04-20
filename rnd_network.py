@@ -17,21 +17,21 @@ class RNDNetwork(torch.nn.Module):
 
         self.target = torch.nn.Sequential(
             # input layer
-            torch.nn.Linear(self.full_length, 512),
+            torch.nn.Linear(self.full_length, 256),
             torch.nn.ReLU(),
-            torch.nn.Linear(512, 512),
+            torch.nn.Linear(256, 256),
             torch.nn.ReLU(),
-            torch.nn.Linear(512, 1)
+            torch.nn.Linear(256, 1)
         )
 
 
         self.prediction = torch.nn.Sequential(
             # input layer
-            torch.nn.Linear(self.full_length, 512),
+            torch.nn.Linear(self.full_length, 256),
             torch.nn.ReLU(),
-            torch.nn.Linear(512, 512),
+            torch.nn.Linear(256, 256),
             torch.nn.ReLU(),
-            torch.nn.Linear(512, 1)
+            torch.nn.Linear(256, 1)
         )
 
         # DEFINE THE OPTIMIZER
@@ -39,6 +39,14 @@ class RNDNetwork(torch.nn.Module):
 
     def forward(self):
         raise NotImplementedError
+
+    def get_checkpoint(self):
+        return self.target.state_dict(), self.prediction.state_dict()
+
+    def load(self, target_filepath, pred_filepath):
+        self.target.load_state_dict(torch.load(target_filepath))
+        self.prediction.load_state_dict(torch.load(pred_filepath))
+
     def _compute_intrinsic_reward(self, next_state): # use batched version when possible
         Ab, _, _ = next_state
         x = Ab.flatten()
@@ -80,9 +88,14 @@ class RNDNetwork(torch.nn.Module):
 
 
 class NoRND(torch.nn.Module):
+
+
     def __init__(self):
         pass
     def compute_intrinsic_reward(self, next_state):
         return 0
+
+    def get_checkpoint(self):
+        return None, None
     def train(self, memory):
         pass

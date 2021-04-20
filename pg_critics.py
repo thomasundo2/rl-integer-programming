@@ -17,9 +17,9 @@ class DenseCritic(torch.nn.Module, AbstractCritic):
             # input layer
             torch.nn.Linear((m + t - 1) * (n + 1), 256),
             torch.nn.ReLU(),
-            torch.nn.Linear(256, 64),
+            torch.nn.Linear(256, 256),
             torch.nn.ReLU(),
-            torch.nn.Linear(64, 1)
+            torch.nn.Linear(256, 1)
         )
         self.m = m
         self.t = t

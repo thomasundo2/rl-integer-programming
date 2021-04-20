@@ -1,7 +1,8 @@
 from ppo import PPOPolicy
 
 def build_ppo(policy_params, critic_params):
-    epochs = 10
+    # todo: add more hyperparameters
+    epochs = 6
     lr = 0.005
     eps_clip = 0.2
 

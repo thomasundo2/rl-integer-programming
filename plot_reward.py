@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-plt.style.use('ggplot')
+#plt.style.use('seaborn')
 import time
 
 from config import env_configs, gen_actor_params, gen_critic_params
@@ -69,14 +69,35 @@ def main():
 
     """
     STARTER CONFIG 2, WILL TEST FOR THE BEST ALGORITHMS!!!!
-    """
+    
     filepaths = ["records/randomip_n15_m15/idx_0_4/actor_random_critic_None_rnd_None/20210418-232807.txt",
                  "records/randomip_n15_m15/idx_0_4/ppo_actor_dense_critic_None_rnd_None/20210419-001441.txt",
-                 "records/randomip_n15_m15/idx_0_4/actor_dense_critic_None_rnd_None/20210419-010446.txt"]
+                 "records/randomip_n15_m15/idx_0_4/actor_dense_critic_None_rnd_None/20210419-010446.txt",
+                 "records/randomip_n15_m15/idx_0_4/ppo_actor_dense_critic_None_rnd_dense/20210419-023130.txt",
+                 "records/randomip_n15_m15/idx_0_4/actor_dense_critic_None_rnd_dense/20210419-024402.txt",
+                 "records/randomip_n15_m15/idx_0_4/ppo_actor_dense_critic_dense_rnd_dense/20210419-024605.txt",
+                 "records/randomip_n15_m15/idx_0_4/actor_dense_critic_dense_rnd_dense/20210419-024659.txt",
+                 "records/randomip_n15_m15/idx_0_4/actor_attention_critic_None_rnd_dense/20210419-024512.txt",
+                 "records/randomip_n15_m15/idx_0_4/ppo_actor_dense_critic_dense_rnd_None/20210419-133431.txt",
+                 "records/randomip_n15_m15/idx_0_4/ppo_actor_dense_critic_dense_rnd_dense/20210419-134535.txt",
+                 "records/randomip_n15_m15/idx_0_4/ppo_actor_dense_critic_None_rnd_None/20210419-164707.txt",
+                 "records/randomip_n15_m15/idx_0_4/ppo_actor_dense_critic_None_rnd_dense/20210419-164659.txt"
+                 ]
     # labels corresponds to the filepath
     labels = ["Random Policy",
               "PPO (Dense Network, No Critic)",
-              "Policy Grad (Dense Network, No Critic)"]
+              "Policy Grad (Dense Network, No Critic)",
+              "PPO w RND(Dense Network, No Critic)",
+              "Policy Grad w RND (Dense Network, No Critic)",
+              "PPO w RND(Dense Network, Dense Critic)",
+              "Policy Grad w RND (Dense Network, Dense Critic)",
+              "Policy Grad w RND (Attention Network, No Critic)",
+              "PPO (Dense Network, Dense Critic)",
+              "PPO w RND (Dense Network, Dense Critic More Iterations)",
+              "PPO (Dense Network, No Critic, More Iterations)",
+              "PPO w RND (Dense Network, No Critic, More Iterations)"
+              ]
+              """
     plot_rewards(filepaths, labels)
 
 

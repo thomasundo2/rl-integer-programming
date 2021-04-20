@@ -21,6 +21,8 @@ class PPOPolicy:  # TODO: PPO is usually used with tanh activation functions, bu
             self.uses_critic = False
             self.optimizer = torch.optim.Adam(self.policy.model.parameters(), lr=lr)
 
+        self.scheduler = torch.optim.lr_scheduler.ExponentialLR(self.optimizer, 0.99, last_epoch=-1, verbose=True)
+
         self.policy_old = build_actor(policy_params)
         self.policy_old.load_state_dict(self.policy.state_dict())
 
@@ -29,6 +31,18 @@ class PPOPolicy:  # TODO: PPO is usually used with tanh activation functions, bu
         # todo: create parameters for these hardcoded values
         self.eps_clip = eps_clip
         self.entropy_coeff = entropy_coeff
+
+    def get_checkpoint(self):
+        if self.uses_critic:
+            return self.policy_old.state_dict(), self.critic.state_dict()
+        return self.policy_old.state_dict(), None
+
+    def load(self, policy_filepath, critic_filepath = None):
+        self.policy_old.load_state_dict(torch.load(policy_filepath))
+        self.policy.load_state_dict(torch.load(policy_filepath))
+        if critic_filepath != None:
+            self.prediction.load_state_dict(torch.load(critic_filepath))
+
 
     # functions used to make rollout decisions
     def _compute_prob_torch(self, state):
@@ -84,10 +98,14 @@ class PPOPolicy:  # TODO: PPO is usually used with tanh activation functions, bu
         # from here, memory.advantages must be computed, however rewards are preprocessed
         # todo: preprocessing needs to be normalized across the code
         for _ in range(self.epochs):
+            print("epoch")
             loss = self._compute_loss(memory)
             self.optimizer.zero_grad()
             loss.backward()
 
             self.optimizer.step()
+        self.scheduler.step()
 
         self.policy_old.load_state_dict(self.policy.state_dict())
+
+

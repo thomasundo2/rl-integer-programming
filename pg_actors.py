@@ -12,6 +12,7 @@ class RandomPolicy(torch.nn.Module, AbstractPolicy):
         probs = np.ones(len(cuts))/len(cuts)
         return torch.FloatTensor(probs)
 
+
     def train(self, memory):
         loss = 0
         return loss
@@ -40,12 +41,13 @@ class AttentionPolicy(torch.nn.Module, AbstractPolicy):
         self.n = n
         self.h = h
 
+
     def _compute_prob_torch(self, state):
         Ab, _, cuts = state
         Ab = torch.nn.functional.normalize(torch.FloatTensor(np.array(Ab, dtype=np.float)), dim=1, p=1)
         cuts = torch.nn.functional.normalize(torch.FloatTensor(np.array(cuts, dtype=np.float)), dim=1, p=1)
-        Ab = torch.FloatTensor(Ab)
-        cuts = torch.FloatTensor(cuts)
+        Ab = torch.FloatTensor(Ab).to(self.device())
+        cuts = torch.FloatTensor(cuts).to(self.device())
         Ab_h = self.model(Ab)
         cuts_h = self.model(cuts)
 
@@ -96,8 +98,8 @@ class DoubleAttentionPolicy(torch.nn.Module, AbstractPolicy):
         Ab, _, cuts = state
         Ab = torch.nn.functional.normalize(torch.FloatTensor(np.array(Ab, dtype=np.float)), dim=1, p=1)
         cuts = torch.nn.functional.normalize(torch.FloatTensor(np.array(cuts, dtype=np.float)), dim=1, p=1)
-        Ab = torch.FloatTensor(Ab)
-        cuts = torch.FloatTensor(cuts)
+        Ab = torch.FloatTensor(Ab).to(self.device())
+        cuts = torch.FloatTensor(cuts).to(self.device())
         Ab_h = self.model_1(Ab)
         cuts_h = self.model_2(cuts)
 
@@ -126,7 +128,7 @@ class RNNPolicy(torch.nn.Module, AbstractPolicy):
         for cut in cuts:
             x = np.vstack([Ab, cut.flatten()])
             batch.append(x)
-        batch_torch = torch.FloatTensor(batch)
+        batch_torch = torch.FloatTensor(batch).to(self.device())
         scores = self.model(batch_torch).flatten()
 
         return torch.nn.functional.softmax(scores, dim=-1)
@@ -181,7 +183,7 @@ class DensePolicy(torch.nn.Module, AbstractPolicy):
 
             batch.append(padded_x)
 
-        batch_torch = torch.FloatTensor(batch)
+        batch_torch = torch.FloatTensor(batch).to(self.device())
         scores = self.model(batch_torch).flatten()
 
         return torch.nn.functional.softmax(scores, dim=-1)

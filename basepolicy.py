@@ -46,3 +46,6 @@ class AbstractPolicy(ABC):
         self.optimizer.step()
 
         return loss.detach().cpu().data.numpy()
+
+    def device(self):
+        return torch.device("cuda" if torch.cuda.is_available() else "cpu")

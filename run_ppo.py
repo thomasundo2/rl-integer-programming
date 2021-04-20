@@ -1,6 +1,6 @@
 from tqdm import tqdm
 import numpy as np
-
+import torch
 # import wandb
 # wandb.login()
 # run=wandb.init(project="finalproject", entity="ieor-4575", tags=["n=10,m=20,i=1"])
@@ -59,12 +59,16 @@ def run_ppo(env_config,
 
 
 def main():
+    mydevice = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Running on {mydevice}")
+
+
     env_config = env_configs.easy_config
     #policy_params = gen_actor_params.gen_dense_params(m=20, n=10, t=10, lr=0.001)
     policy_params = gen_actor_params.gen_dense_params(m=60, n=60, t=50, lr=0.001)
     #critic_params = gen_critic_params.gen_critic_dense(m=15, n=15, t=20, lr=0.001)
-    critic_params = gen_critic_params.gen_no_critic()
-    rnd_params = gen_rnd_params.gen_no_rnd()
+    critic_params = gen_critic_params.gen_critic_dense(m=60, n=60, t=50, lr=0.001)
+    rnd_params = gen_rnd_params.gen_rnd_dense(m=60, n=60, t=50, lr=0.001)
 
     hyperparams = {"iterations": 10000,  # number of iterations to run policy gradient
                    "num_processes": 6,  # number of processes running in parallel

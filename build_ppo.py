@@ -1,4 +1,5 @@
 from ppo import PPOPolicy
+import torch
 
 def build_ppo(policy_params, critic_params):
     # todo: add more hyperparameters

@@ -35,7 +35,10 @@ def run_ppo(env_config,
     env = make_multiple_env(**env_config)
     ppo_ac = build_ppo(policy_params, critic_params)
     rnd = build_rnd(rnd_params)
-    ppo_ac.load('records/train_10_n60_m60/idx_0_9/ppo_actor_dense_critic_None_rnd_None/models_20210419-224441/actor_500_20210421-135321.pt')
+    ppo_ac.load(policy_filepath= "records/train_100_n60_m60/idx_0_98/ppo_actor_dense_critic_dense_rnd_dense/models_20210420-222013/actor_700_20210423-081202.pt",
+                critic_filepath="records/train_100_n60_m60/idx_0_98/ppo_actor_dense_critic_dense_rnd_dense/models_20210420-222013/critic_700_20210423-081202.pt")
+    rnd.load(target_filepath="records/train_100_n60_m60/idx_0_98/ppo_actor_dense_critic_dense_rnd_dense/models_20210420-222013/rndtarget_700_20210423-081202.pt",
+             pred_filepath="records/train_100_n60_m60/idx_0_98/ppo_actor_dense_critic_dense_rnd_dense/models_20210420-222013/rndpred_700_20210423-081202.pt")
 
     rollout_gen = RolloutGenerator(num_processes, num_trajs_per_process, verbose=True)
     for ite in tqdm(range(iterations)):
@@ -44,16 +47,11 @@ def run_ppo(env_config,
                             / (np.std(memory.values) + 1e-8)
         memory.intrinsic_values = (memory.intrinsic_values - np.mean(memory.intrinsic_values)) \
                             / (np.std(memory.intrinsic_values) + 1e-8)
-        rnd.train(memory)
-        ppo_ac.train(memory)
+        #rnd.train(memory)
+        #ppo_ac.train(memory)
         # log results
         rrecord.extend(memory.reward_sums)
         logger.record(memory.reward_sums)
-
-        if ite > 0 and ite % 100 == 0:
-            logger.save_rnd(rnd, ite)
-            logger.save_ppo(ppo_ac, ite)
-
 
     plot_arr(rrecord, label="Moving Avg Reward " + policy_params['model'], window_size=101)
     plot_arr(rrecord, label="Reward " + policy_params['model'], window_size=1)
@@ -64,12 +62,12 @@ def main():
     print(f"Running on {mydevice}")
 
 
-    env_config = env_configs.easy_config
+    env_config = env_configs.test_config
     #policy_params = gen_actor_params.gen_dense_params(m=20, n=10, t=10, lr=0.001)
     policy_params = gen_actor_params.gen_dense_params(m=60, n=60, t=50, lr=0.001)
     #critic_params = gen_critic_params.gen_critic_dense(m=15, n=15, t=20, lr=0.001)
-    critic_params = gen_critic_params.gen_no_critic()
-    rnd_params = gen_rnd_params.gen_no_rnd()
+    critic_params = gen_critic_params.gen_critic_dense(m=60, n=60, t=50, lr=0.001)
+    rnd_params = gen_rnd_params.gen_rnd_dense(m=60, n=60, t=50, lr=0.001)
 
     hyperparams = {"iterations": 10000,  # number of iterations to run policy gradient
                    "num_processes": 6,  # number of processes running in parallel

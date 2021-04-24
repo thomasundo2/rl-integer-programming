@@ -35,3 +35,11 @@ hard_config = {
     "timelimit"       : 50,
     "reward_type"     : 'obj'
 }
+
+test_config = {
+    "load_dir"        : 'instances/test_100_n60_m60',
+    "idx_list"        : list(range(10)),
+    "timelimit"       : 50,
+    "reward_type"     : 'obj'
+
+}

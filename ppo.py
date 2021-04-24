@@ -5,7 +5,7 @@ from build_actor_critic import build_actor, build_critic
 
 
 class PPOPolicy:  # TODO: PPO is usually used with tanh activation functions, but they don't work with parallelization?
-    def __init__(self, policy_params, critic_params, epochs, lr, eps_clip, entropy_coeff):
+    def __init__(self, policy_params, critic_params, epochs, lr, eps_clip, entropy_coeff, policy_filepath= None, critic_filepath = None):
 
         self.policy = build_actor(policy_params)
         self.critic = build_critic(critic_params)
@@ -32,6 +32,10 @@ class PPOPolicy:  # TODO: PPO is usually used with tanh activation functions, bu
         self.eps_clip = eps_clip
         self.entropy_coeff = entropy_coeff
 
+        if policy_filepath != None:
+            self.load(policy_filepath, critic_filepath)
+
+
     def get_checkpoint(self):
         if self.uses_critic:
             return self.policy_old.state_dict(), self.critic.state_dict()
@@ -41,7 +45,7 @@ class PPOPolicy:  # TODO: PPO is usually used with tanh activation functions, bu
         self.policy_old.load_state_dict(torch.load(policy_filepath))
         self.policy.load_state_dict(torch.load(policy_filepath))
         if critic_filepath != None:
-            self.prediction.load_state_dict(torch.load(critic_filepath))
+            self.critic.load_state_dict(torch.load(critic_filepath))
 
 
     # functions used to make rollout decisions

@@ -2,7 +2,7 @@ import torch
 import numpy as np
 
 class RNDNetwork(torch.nn.Module):
-    def __init__(self, m, n, t, lr=0.001):
+    def __init__(self, m, n, t, lr, rnd_filepath = None):
         """
         max_input is the size of the maximum state size
         Let t be the max number of timesteps,
@@ -36,6 +36,8 @@ class RNDNetwork(torch.nn.Module):
 
         # DEFINE THE OPTIMIZER
         self.optimizer = torch.optim.Adam(self.prediction.parameters(), lr=lr)
+        if rnd_filepath != None:
+            self.load(rnd_filepath)
 
     def forward(self):
         raise NotImplementedError

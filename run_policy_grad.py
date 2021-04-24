@@ -61,10 +61,10 @@ def policy_grad(env_config,
 
 
 def main():
-    env_config = env_configs.starter_config2
-    policy_params = gen_actor_params.gen_dense_params(m=15, n=15, t=20, lr=0.001)
-    critic_params = gen_critic_params.gen_critic_dense(m=15, n=15, t=20, lr=0.001)
-    rnd_params = gen_rnd_params.gen_rnd_dense(m=15, n=15, t=20, lr=0.001)
+    env_config = env_configs.test_config
+    policy_params = gen_actor_params.gen_rand_params()
+    critic_params = gen_critic_params.gen_no_critic()
+    rnd_params = gen_rnd_params.gen_no_rnd()
     #policy_params = gen_actor_params.gen_attention_params(n=25, h=32)
     #critic_params = gen_critic_params.gen_critic_dense(m=25, n=25, t=20, lr=0.001)
     # critic_params = gen_critic_params.gen_critic_dense(m=20, n=10, t=10, lr=0.001)

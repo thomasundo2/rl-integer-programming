@@ -2,7 +2,7 @@ import torch
 
 from rnd_network import RNDNetwork, NoRND
 
-def build_rnd(rnd_params):
+def build_rnd(rnd_params, rnd_filepath = None):
     mydevice = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     if rnd_params['model'] == 'dense':

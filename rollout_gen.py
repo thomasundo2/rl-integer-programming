@@ -2,11 +2,14 @@ import numpy as np
 import os
 import sys
 from contextlib import contextmanager
-from multiprocessing import Pool
+from torch.multiprocessing import Pool, set_start_method
 
 
 from memory import TrajMemory, MasterMemory
 from helper import discounted_rewards
+
+
+
 class RolloutGenerator(object):
     """a parallel process trajectory generator, with preprocessing functionality
     """
@@ -131,6 +134,10 @@ class RolloutGenerator(object):
         return trajs
 
     def generate_trajs(self, env, actor, rnd, gamma, intrinsic_gamma):
+        try:
+            set_start_method('spawn')
+        except RuntimeError:
+            pass
         if self.num_processes == 1: # don't run in parallel
             DATA = []
             DATA.append(self._generate_traj_process(env, actor, gamma, 0, rnd, intrinsic_gamma))

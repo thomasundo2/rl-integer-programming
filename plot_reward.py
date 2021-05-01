@@ -2,15 +2,12 @@ import matplotlib.pyplot as plt
 plt.style.use('seaborn')
 
 import seaborn as sns
-import itertools
 import numpy as np
 
 sns.set(style='darkgrid')
 import time
 
-from config import env_configs, gen_actor_params, gen_critic_params
-from logger import get_filename
-from helper import plot_arr, get_reward_sums
+from src.helper import plot_arr, get_reward_sums
 
 
 def plot_rewards(filepaths, labels = None):

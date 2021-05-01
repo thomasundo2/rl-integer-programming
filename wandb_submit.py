@@ -1,4 +1,4 @@
-from helper import get_reward_sums, moving_avg
+from src.helper import get_reward_sums, moving_avg
 import wandb
 
 wandb.login()

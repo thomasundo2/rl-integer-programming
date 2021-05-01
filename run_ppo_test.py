@@ -8,11 +8,11 @@ import torch
 
 from config import gen_actor_params, gen_critic_params, gen_rnd_params, env_configs
 from gymenv_v2 import make_multiple_env
-from rollout_gen import RolloutGenerator
-from helper import plot_arr
-from build_ppo import build_ppo
-from build_rnd import build_rnd
-from logger import RewardLogger
+from src.rollout_gen import RolloutGenerator
+from src.helper import plot_arr
+from models.build_ppo import build_ppo
+from models.build_rnd import build_rnd
+from src.logger import RewardLogger
 
 def run_ppo(env_config,
             policy_params,

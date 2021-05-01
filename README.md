@@ -2,22 +2,16 @@
 Instructor: Professor Shipra Agrawal\
 Assistants: Yunhao Tang, Abhi Gupta
 
-## Installation
-The only dependency is gurobipy. You can install gurobipy into your `ieor4575` conda environment:
-Note: Key is stored in /Users/thomastran/gurobi.lic
+## Info
+The final report generated can be found under `4575_final_report_tkt2120_submission.pdf`
 
+---------
+## To Run
+To run any of the training scripts on instances generated or downloaded, use
 ```
-$ conda install -c gurobi gurobi
+python run_ppo.py
 ```
-
-In addition, you need an academic license from gurobi. After getting the license, go to the license page.
-
-(https://www.gurobi.com/downloads/end-user-license-agreement-academic/)
-
- In order to activate the license, you will need to run the **grbgetkey** command with the license key written there. After this step, you can use the `ieor4575` environment that you have used for labs to complete the class project.
-
-## WandB for Visualizaition
-Class labs have made extensive use of wandb to familiarize you with some great machine learning visualization tools. You are encouraged to use wandb in the development of this project. We will soon provide further information about leaderboard for the project.
+For now, hyperparameters must be changed within the `.py` file. 
 
 ## State-Action Description
 

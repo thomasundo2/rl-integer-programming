@@ -1,4 +1,4 @@
-from gymenv_v2 import make_multiple_env
+from env.gymenv_v2 import make_multiple_env
 import numpy as np
 
 

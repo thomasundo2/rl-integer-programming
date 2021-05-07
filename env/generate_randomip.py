@@ -1,5 +1,5 @@
 import numpy as np
-from gymenv_v2 import GurobiOriginalEnv, timelimit_wrapper
+from env.gymenv_v2 import GurobiOriginalEnv, timelimit_wrapper
 
 
 def generate_randomip(n, m):

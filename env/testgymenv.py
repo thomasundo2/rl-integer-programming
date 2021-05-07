@@ -1,6 +1,5 @@
-from gymenv_v2 import timelimit_wrapper, GurobiOriginalEnv
+from env.gymenv_v2 import timelimit_wrapper, GurobiOriginalEnv
 import numpy as np
-import argparse
 
 
 def make_gurobi_env(load_dir, idx, timelimit):

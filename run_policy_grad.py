@@ -7,7 +7,7 @@ import numpy as np
 
 
 from config import gen_actor_params, gen_critic_params, env_configs, gen_rnd_params
-from gymenv_v2 import make_multiple_env
+from env.gymenv_v2 import make_multiple_env
 from src.rollout_gen import RolloutGenerator
 from src.helper import plot_arr
 from src.logger import RewardLogger

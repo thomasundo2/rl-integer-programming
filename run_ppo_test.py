@@ -7,7 +7,7 @@ import torch
 
 
 from config import gen_actor_params, gen_critic_params, gen_rnd_params, env_configs
-from gymenv_v2 import make_multiple_env
+from env.gymenv_v2 import make_multiple_env
 from src.rollout_gen import RolloutGenerator
 from src.helper import plot_arr
 from models.build_ppo import build_ppo

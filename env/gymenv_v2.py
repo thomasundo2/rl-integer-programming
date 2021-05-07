@@ -1,12 +1,10 @@
 import numpy as np
-import gurobiutils
-from solverutils import computeoptimaltab, generatecutzeroth
-import time
-
+from env import gurobiutils
+from env.solverutils import computeoptimaltab, generatecutzeroth
 
 SOLVER = 'GUROBI'
 if SOLVER == 'GUROBI':
-	from gurobiutils import GurobiSolve
+	from env.gurobiutils import GurobiSolve
 if SOLVER == 'SCIPY':
 	from scipyutils import ScipyLinProgSolve
 
@@ -49,9 +47,9 @@ def compute_state(A,b,c):
 	cuts_a = []
 	cuts_b = []
 	for i in range(x.size):
-		if abs(round(x[i])-x[i])>1e-2: 
+		if abs(round(x[i])-x[i])>1e-2:
 			# fractional rows used to compute cut
-			cut_a,cut_b = generatecutzeroth(tab[i,:])	
+			cut_a,cut_b = generatecutzeroth(tab[i,:])
 			# a^T x + e^T y >= d
 			assert cut_a.size == m+n
 			a = cut_a[0:n]
@@ -94,7 +92,7 @@ class GurobiOriginalEnv(object):
 		#	assert done is False
 		#except NotImplementedError:
 		#	print('the env needs to be initialized with nontrivial ip')
-		
+
 	def check_init(self):
 		_, done = self._reset()
 		return done
